@@ -9,7 +9,7 @@ from pydantic import Field, field_validator, model_validator
 class Settings(BaseSettings):
     """Type-safe configuration loaded from environment variables or .env file."""
     
-    APP_NAME: str = "RBAC API"
+    APP_NAME: str = "HUBBO"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
     API_V1_PREFIX: str = "/api/v1"
@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     MIN_PASSWORD_LENGTH: int = Field(default=8, ge=6)
     
     DATABASE_URL: str = Field(
-        default="postgresql+psycopg2://postgres:12345678@localhost:5432/rbac",
+        default="postgresql+psycopg2://postgres:12345678@localhost:5432/hubbo",
         description="Database connection string"
     )
     
@@ -92,7 +92,7 @@ class Settings(BaseSettings):
         description="Default sender email address"
     )
     MAIL_FROM_NAME: str = Field(
-        default="RBAC API",
+        default="HUBBO",
         description="Default sender name"
     )
     MAIL_PORT: int = Field(

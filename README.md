@@ -1,53 +1,32 @@
-# 🔐 FastAPI RBAC API
+# 🚀 HUBBO Backend
 
-Production-ready Role-Based Access Control (RBAC) API with JWT authentication, AI integration, and comprehensive security features.
-
-[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-green.svg)](https://fastapi.tiangolo.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-blue.svg)](https://www.postgresql.org/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+Production-ready FastAPI backend with **RBAC** (Role-Based Access Control), **JWT Authentication**, and **Email Integration**. Built as a solid foundation for AI-powered applications.
 
 ---
 
 ## ✨ Features
 
-### 🔐 Authentication & Authorization
-- **JWT Authentication** with access + refresh token rotation
-- **Argon2 Password Hashing** (industry best practice)
-- **Role-Based Access Control (RBAC)** with granular permissions
-- **Permission System** - Fine-grained endpoint protection
-- **Password Reset** via email with secure tokens
+### 🔐 Authentication & Security
+- **JWT Authentication** - Access & refresh token rotation
+- **Argon2 Password Hashing** - Industry-standard security
+- **RBAC System** - Role-based access control with granular permissions
+- **Email Integration** - Password reset & notifications
 - **Rate Limiting** - Brute force protection
+- **Security Headers** - CSP, X-Frame-Options, HSTS
 
-### 🛡️ Security
-- Input sanitization (XSS/injection prevention)
-- Security headers (CSP, X-Frame-Options, HSTS)
-- CORS configuration
-- SQL injection protection (SQLAlchemy ORM)
-- Email enumeration prevention
-- Secure token generation
+### 🤖 AI Ready
+- **OpenAI & Anthropic** support
+- **LangChain** integration
+- **Vector Store** (ChromaDB)
+- **Document Processing** - PDF, DOCX support
+- **File Upload** system
 
-### 🤖 AI Integration
-- OpenAI & Anthropic support
-- LangChain integration
-- Document processing & search
-- Vector store (ChromaDB)
-- File upload support
-
-### 📊 API Features
-- RESTful endpoints
-- API versioning (`/api/v1/`)
-- Auto-generated OpenAPI docs (Swagger UI)
-- Health check endpoints
-- Comprehensive error handling
-
-### 🐳 DevOps
-- Docker & docker-compose support
-- PostgreSQL database
-- Environment configuration
-- Production-ready logging
-- Health checks
+### 🏗️ Production Ready
+- **Docker & Docker Compose** support
+- **PostgreSQL** database
+- **Health Check** endpoints
+- **Comprehensive Logging**
+- **Environment Configuration**
 
 ---
 
@@ -58,48 +37,46 @@ Production-ready Role-Based Access Control (RBAC) API with JWT authentication, A
 - PostgreSQL 15+
 - (Optional) Docker & Docker Compose
 
-### 1. Clone Repository
+### 1. Clone & Setup
 ```bash
 git clone <your-repo-url>
-cd RBAC
+cd backend
+
+# Run setup script
+./setup.sh
 ```
 
-### 2. Setup Environment
+The setup script will:
+- Create virtual environment
+- Install dependencies
+- Create `.env` from template
+- Optionally initialize database
+
+### 2. Configure Environment
+Edit `.env` file with your settings:
 ```bash
-# Create virtual environment
-python3 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/hubbo
 
-# Install dependencies
-pip install -r requirements.txt
+# Security
+SECRET_KEY=your-secret-key-here  # Generate with: python -c "import secrets; print(secrets.token_urlsafe(64))"
 
-# Copy environment template
-cp .env.example .env
+# Email
+MAIL_USERNAME=your-email@example.com
+MAIL_PASSWORD=your-app-password
 
-# Edit .env with your configuration
-nano .env
+# AI (Optional)
+OPENAI_API_KEY=sk-your-key-here
 ```
 
-### 3. Initialize Database
+### 3. Start Development Server
 ```bash
-# Create PostgreSQL database
-createdb rbac
-
-# Populate with sample data
-python3 app/scripts/init_database.py
-```
-
-### 4. Run Application
-```bash
-# Development server
+source .venv/bin/activate
 uvicorn app.main:app --reload
-
-# Or with Docker
-docker-compose up -d
 ```
 
-### 5. Access API
-- **API Docs:** http://localhost:8000/docs
+### 4. Access API
+- **Swagger UI:** http://localhost:8000/docs
 - **ReDoc:** http://localhost:8000/redoc
 - **Health Check:** http://localhost:8000/health
 
@@ -107,119 +84,13 @@ docker-compose up -d
 
 ## 🔑 Default Credentials
 
-After running `init_database.py`, use these credentials:
+After running database initialization:
 
-| Email | Password | Role | Permissions |
-|-------|----------|------|-------------|
-| admin@example.com | Admin123! | admin | All (10) |
-| manager@example.com | Manager123! | manager | 7 permissions |
-| user@example.com | User123! | user | 3 permissions |
-| guest@example.com | Guest123! | guest | 1 permission |
-
----
-
-## 📖 Documentation
-
-### Essential Guides
-- **[PROJECT_STATUS.md](PROJECT_STATUS.md)** - Current state and metrics
-- **[TESTING_GUIDE.md](TESTING_GUIDE.md)** - How to test and validate
-- **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** - Production deployment
-- **[SECURITY_BEST_PRACTICES.md](SECURITY_BEST_PRACTICES.md)** - Security guidelines
-
-### Production Documentation
-- **[docs/production/](docs/production/)** - Production readiness audit and fixes
-
-### Archive
-- **[docs/archive/](docs/archive/)** - Historical documentation and implementation notes
-
----
-
-## 🏗️ Project Structure
-
-```
-RBAC/
-├── app/
-│   ├── api/v1/endpoints/    # API endpoints
-│   ├── core/                # Core utilities (security, config)
-│   ├── db/                  # Database configuration
-│   ├── models/              # SQLAlchemy models
-│   ├── schemas/             # Pydantic schemas
-│   ├── middleware/          # Custom middleware
-│   ├── services/            # Business logic
-│   ├── ai/                  # AI integration
-│   └── main.py              # FastAPI application
-├── tests/                   # Test suite
-├── docs/                    # Documentation
-├── .env.example             # Environment template
-├── requirements.txt         # Python dependencies
-├── Dockerfile               # Docker configuration
-├── docker-compose.yml       # Multi-container setup
-└── README.md                # This file
-```
-
----
-
-## 🔐 RBAC System
-
-### Permissions (10)
-- `view_user` - View user details
-- `create_user` - Create new users
-- `edit_user` - Edit user information
-- `delete_user` - Delete users
-- `manage_roles` - Manage roles
-- `manage_permissions` - Manage permissions
-- `use_ai` - Use AI features
-- `manage_ai` - Manage AI configuration
-- `user:read` - Read files
-- `user:write` - Upload files
-
-### Roles
-- **admin** - All permissions
-- **manager** - User management + AI
-- **user** - Basic access + AI
-- **guest** - Read-only access
-
-### Usage Example
-```python
-from app.middleware import require_permission
-
-@router.post("/users/")
-def create_user(
-    _: bool = Depends(require_permission("create_user"))
-):
-    # Only users with create_user permission can access
-    pass
-```
-
----
-
-## 🧪 Testing
-
-### Run Tests
-```bash
-# All tests
-pytest tests/ -v
-
-# With coverage
-pytest tests/ --cov=app --cov-report=html
-
-# Specific test
-pytest tests/test_auth.py -v
-```
-
-### Manual Testing
-```bash
-# Login
-curl -X POST http://localhost:8000/api/v1/auth/login \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "username=admin@example.com&password=Admin123!"
-
-# Get current user
-curl -X GET http://localhost:8000/api/v1/users/me \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
-```
-
-See **[TESTING_GUIDE.md](TESTING_GUIDE.md)** for comprehensive testing procedures.
+| Email | Password | Role | Access Level |
+|-------|----------|------|--------------|
+| admin@example.com | Admin123! | admin | Full access |
+| manager@example.com | Manager123! | manager | User management |
+| user@example.com | User123! | user | Basic access |
 
 ---
 
@@ -232,14 +103,69 @@ docker-compose up -d
 
 ### Production
 ```bash
-# Build image
-docker build -t rbac-api .
+# Edit production environment
+cp .env.example .env.production
+nano .env.production
 
-# Run with environment file
-docker run -p 8000:8000 --env-file .env.production rbac-api
+# Deploy
+docker-compose up -d
 ```
 
-See **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** for production deployment.
+---
+
+## 📁 Project Structure
+
+```
+backend/
+├── app/
+│   ├── api/v1/endpoints/    # API endpoints
+│   ├── core/                # Security, config
+│   ├── db/                  # Database setup
+│   ├── models/              # SQLAlchemy models
+│   ├── schemas/             # Pydantic schemas
+│   ├── middleware/          # Custom middleware
+│   ├── services/            # Business logic
+│   ├── ai/                  # AI integration
+│   └── main.py              # FastAPI app
+├── tests/                   # Test suite
+├── .env.example             # Environment template
+├── requirements.txt         # Dependencies
+├── setup.sh                 # Setup script
+├── Dockerfile               # Docker config
+└── docker-compose.yml       # Multi-container setup
+```
+
+---
+
+## 🔐 RBAC System
+
+### Permissions
+- `view_user` - View user details
+- `create_user` - Create users
+- `edit_user` - Edit users
+- `delete_user` - Delete users
+- `manage_roles` - Manage roles
+- `manage_permissions` - Manage permissions
+- `use_ai` - Use AI features
+- `manage_ai` - Manage AI config
+- `user:read` - Read files
+- `user:write` - Upload files
+
+### Roles
+- **admin** - All permissions
+- **manager** - User management + AI
+- **user** - Basic access + AI
+- **guest** - Read-only
+
+### Usage in Code
+```python
+from app.middleware import require_permission
+
+@router.post("/users/")
+def create_user(_: bool = Depends(require_permission("create_user"))):
+    # Only users with create_user permission can access
+    pass
+```
 
 ---
 
@@ -272,7 +198,41 @@ See **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** for production deployment.
 - `POST /api/v1/ai/documents/upload` - Upload document
 - `POST /api/v1/ai/documents/search` - Search documents
 
-Full API documentation: http://localhost:8000/docs
+---
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+pytest tests/ -v
+
+# With coverage
+pytest tests/ --cov=app --cov-report=html
+
+# Specific test file
+pytest tests/test_auth.py -v
+```
+
+---
+
+## 🛠️ Development
+
+### Setup for Development
+```bash
+./setup.sh
+source .venv/bin/activate
+uvicorn app.main:app --reload
+```
+
+### Database Migrations
+```bash
+# Initialize database
+python -m app.scripts.init_database
+
+# Or use individual scripts
+python -m app.scripts.init_db
+python -m app.scripts.populate_database
+```
 
 ---
 
@@ -280,94 +240,108 @@ Full API documentation: http://localhost:8000/docs
 
 ### Environment Variables
 
+See `.env.example` for all available options. Key variables:
+
 ```bash
+# App
+APP_NAME=HUBBO
+DEBUG=False
+
 # Database
-DATABASE_URL=postgresql://user:password@localhost:5432/rbac
+DATABASE_URL=postgresql://user:password@localhost:5432/hubbo
 
 # Security
-SECRET_KEY=your-secret-key-here
-DEBUG=False
+SECRET_KEY=<generate-secure-key>
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+REFRESH_TOKEN_EXPIRE_DAYS=7
 
 # Email
 MAIL_USERNAME=your-email@example.com
 MAIL_PASSWORD=your-app-password
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
 
 # AI
+AI_PROVIDER=openai
 OPENAI_API_KEY=sk-your-key-here
+AI_MODEL=gpt-3.5-turbo
+
+# CORS
+BACKEND_CORS_ORIGINS=http://localhost:3000,http://localhost:5173
 ```
 
-See `.env.example` for all available options.
+---
+
+## 📦 Dependencies
+
+### Core
+- **FastAPI** - Modern web framework
+- **SQLAlchemy** - ORM
+- **PostgreSQL** - Database
+- **Pydantic** - Data validation
+
+### Security
+- **Argon2** - Password hashing
+- **python-jose** - JWT tokens
+- **passlib** - Password utilities
+
+### AI & ML
+- **LangChain** - AI framework
+- **OpenAI** - LLM provider
+- **ChromaDB** - Vector store
+- **tiktoken** - Token counting
+
+### Email
+- **fastapi-mail** - Email sending
+- **email-validator** - Email validation
 
 ---
 
-## 🛡️ Security
+## 🚀 Production Deployment
 
-### Best Practices Implemented
-- ✅ Argon2 password hashing
-- ✅ JWT with refresh token rotation
-- ✅ Rate limiting (5 login attempts/minute)
-- ✅ Input sanitization
-- ✅ Security headers (CSP, X-Frame-Options)
-- ✅ CORS configuration
-- ✅ SQL injection protection
-- ✅ Email enumeration prevention
+### Pre-deployment Checklist
+- [ ] Set strong `SECRET_KEY`
+- [ ] Set `DEBUG=False`
+- [ ] Configure production database
+- [ ] Set up email credentials
+- [ ] Configure CORS origins
+- [ ] Set up SSL/HTTPS
+- [ ] Configure monitoring
+- [ ] Set up backups
 
-### Security Score: 92/100
+### Deploy with Docker
+```bash
+# Production setup
+./setup.sh --production
 
-See **[SECURITY_BEST_PRACTICES.md](SECURITY_BEST_PRACTICES.md)** for details.
+# Start services
+docker-compose up -d
 
----
-
-## 📈 Performance
-
-- **Throughput:** ~500 req/sec (single instance)
-- **Latency (p95):** ~150ms
-- **Concurrent Users:** ~200
-- **Scalability:** Horizontal scaling ready
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
+# Check health
+curl http://localhost:8000/health
+```
 
 ---
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see LICENSE file for details
 
 ---
 
-## 🙏 Acknowledgments
+## 🤝 Contributing
 
-- [FastAPI](https://fastapi.tiangolo.com/) - Modern web framework
-- [SQLAlchemy](https://www.sqlalchemy.org/) - SQL toolkit
-- [Pydantic](https://pydantic-docs.helpmanual.io/) - Data validation
-- [LangChain](https://python.langchain.com/) - AI integration
+This is a boilerplate project. Feel free to customize for your needs.
 
 ---
 
 ## 📞 Support
 
-- **Documentation:** Check the `docs/` folder
-- **Issues:** Open an issue on GitHub
-- **Email:** your-email@example.com
+- **Documentation:** Check the code comments and docstrings
+- **Issues:** Open an issue on your repository
+- **API Docs:** http://localhost:8000/docs
 
 ---
 
-## 🎯 Project Status
-
-**Version:** 1.0.0  
-**Status:** ✅ Production Ready  
-**Grade:** A- (90/100)
-
-See **[PROJECT_STATUS.md](PROJECT_STATUS.md)** for detailed metrics.
-
----
-
-**Built with ❤️ using FastAPI**
+**Built with ❤️ for HUBBO - Your AI-Powered Application**

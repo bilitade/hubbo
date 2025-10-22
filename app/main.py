@@ -1,9 +1,11 @@
 """
-Production-ready RBAC API with JWT authentication and permission-based authorization.
+HUBBO Backend - Production-ready API with RBAC, JWT authentication, and AI integration.
 
 Features:
 - JWT authentication with refresh token rotation
-- Fine-grained permission system
+- Role-based access control (RBAC)
+- Email integration for password reset
+- AI-powered features ready
 - RESTful API with versioning
 """
 from fastapi import FastAPI
@@ -24,11 +26,12 @@ app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     description="""
-    ## RBAC API - Authentication & Authorization System
+    ## HUBBO Backend - AI-Powered Application Platform
     
     **Authentication**: JWT tokens with automatic rotation  
-    **Authorization**: Role and permission-based access control  
-    **Resources**: Users, Roles, Permissions
+    **Authorization**: Role-based access control (RBAC)  
+    **Email**: Password reset & notifications  
+    **AI Ready**: OpenAI, Anthropic, LangChain integration
     
     ### Quick Start
     1. Login at `/api/v1/auth/login` with email/password

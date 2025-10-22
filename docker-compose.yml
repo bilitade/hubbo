@@ -6,7 +6,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/rbac
+      - DATABASE_URL=postgresql://user:password@db:5432/hubbo
       - UPLOAD_DIR=/app/data/uploads
       - VECTOR_STORE_PATH=/app/data/vectorstore
     volumes:
@@ -21,7 +21,7 @@ services:
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=rbac
+      - POSTGRES_DB=hubbo
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:

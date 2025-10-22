@@ -67,6 +67,10 @@ dmypy.json
 # File uploads and vector store
 data/uploads/
 data/vectorstore/
+
+# Backups
+backup_*/
+
 # Frontend build
 frontend/dist/
 frontend/node_modules/

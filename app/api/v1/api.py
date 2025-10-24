@@ -6,6 +6,8 @@ from app.api.v1.endpoints import (
     roles,
     permissions,
     ai,
+    ai_project,
+    ai_enhance,
     files,
     password,
     profiles,
@@ -33,5 +35,7 @@ api_router.include_router(experiments.router, prefix="/experiments", tags=["Expe
 
 # AI & Files
 api_router.include_router(ai.router, prefix="/ai", tags=["AI Assistant"])
+api_router.include_router(ai_project.router, prefix="/ai/project", tags=["AI Project Generator"])
+api_router.include_router(ai_enhance.router, prefix="/ai/enhance", tags=["AI Enhancers"])
 api_router.include_router(files.router, prefix="/files", tags=["File Storage"])
 

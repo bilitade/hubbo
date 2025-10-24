@@ -2,6 +2,11 @@
 
 # Hubbo Database Initialization Script
 # This script activates the virtual environment and initializes the database
+#
+# Usage:
+#   ./init_database.sh                    - Initialize with default data
+#   ./init_database.sh --with-sample-data - Initialize with sample data
+#   ./init_database.sh --skip-drop        - Add to existing database without dropping tables
 
 echo "========================================"
 echo "Hubbo Database Initialization"
@@ -17,19 +22,15 @@ else
     exit 1
 fi
 
-# Check if --with-sample-data flag is provided
-if [ "$1" == "--with-sample-data" ]; then
-    echo "Initializing database with sample data..."
-    python -m app.scripts.init_hubbo_db --with-sample-data
-else
-    echo "Initializing database..."
-    python -m app.scripts.init_hubbo_db
-fi
+# Initialize database with provided flags
+echo "Initializing database..."
+python -m app.scripts.init_database "$@"
 
 echo ""
 echo "========================================"
 echo "Next steps:"
-echo "1. Start the server: uvicorn app.main:app --reload"
-echo "2. Access API docs: http://localhost:8000/docs"
-echo "3. Login with: admin@example.com / Admin123!"
+echo "1. Start backend:  uvicorn app.main:app --reload"
+echo "2. Start frontend: npm run dev (in frontend directory)"
+echo "3. Visit:          http://localhost:5173"
+echo "4. Login with:     admin@example.com / Admin123!"
 echo "========================================"

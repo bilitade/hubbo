@@ -62,6 +62,21 @@ def create_profile(
     return profile
 
 
+@router.get("/", response_model=List[ProfileResponse])
+def list_profiles(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    _: bool = Depends(require_permission("view_user")),
+):
+    """
+    List all profiles with pagination.
+    """
+    profiles = db.query(Profile).offset(skip).limit(limit).all()
+    return profiles
+
+
 @router.get("/me", response_model=ProfileResponse)
 def get_my_profile(
     db: Session = Depends(get_db),

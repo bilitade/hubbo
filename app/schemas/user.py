@@ -1,5 +1,6 @@
 """User schemas for request/response validation."""
 from typing import List, Optional
+from uuid import UUID
 from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator
 from app.schemas.role import RoleResponse
 
@@ -86,7 +87,7 @@ class UserAdminUpdate(BaseModel):
 
 class UserResponse(UserBase):
     """User response schema."""
-    id: int
+    id: UUID
     is_active: bool
     is_approved: bool
     roles: List[RoleResponse] = Field(default_factory=list)

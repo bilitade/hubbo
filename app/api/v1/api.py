@@ -1,14 +1,37 @@
 """API v1 router aggregation."""
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, users, roles, permissions, ai, files, password
+from app.api.v1.endpoints import (
+    auth,
+    users,
+    roles,
+    permissions,
+    ai,
+    files,
+    password,
+    profiles,
+    ideas,
+    projects,
+    tasks,
+    experiments,
+)
 
 api_router = APIRouter()
 
+# Authentication & User Management
 api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 api_router.include_router(password.router, prefix="/password", tags=["Password Management"])
 api_router.include_router(users.router, prefix="/users", tags=["Users"])
+api_router.include_router(profiles.router, prefix="/profiles", tags=["Profiles"])
 api_router.include_router(roles.router, prefix="/roles", tags=["Roles"])
 api_router.include_router(permissions.router, prefix="/permissions", tags=["Permissions"])
+
+# Core Features
+api_router.include_router(ideas.router, prefix="/ideas", tags=["Ideas"])
+api_router.include_router(projects.router, prefix="/projects", tags=["Projects"])
+api_router.include_router(tasks.router, prefix="/tasks", tags=["Tasks"])
+api_router.include_router(experiments.router, prefix="/experiments", tags=["Experiments"])
+
+# AI & Files
 api_router.include_router(ai.router, prefix="/ai", tags=["AI Assistant"])
 api_router.include_router(files.router, prefix="/files", tags=["File Storage"])
 

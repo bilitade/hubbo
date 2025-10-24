@@ -1,19 +1,22 @@
 """User model with role relationships."""
 from typing import TYPE_CHECKING
+import uuid
 from sqlalchemy import Column, Integer, String, Table, ForeignKey, Boolean
 from sqlalchemy.orm import relationship, Mapped, mapped_column
+from sqlalchemy.dialects.postgresql import UUID
 from app.db.base import Base
 
 if TYPE_CHECKING:
     from app.models.role import Role
     from app.models.token import RefreshToken
     from app.models.password_reset import PasswordResetToken
+    from app.models.idea import Idea
 
 
 user_roles = Table(
     "user_roles",
     Base.metadata,
-    Column("user_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+    Column("user_id", UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
     Column("role_id", Integer, ForeignKey("roles.id", ondelete="CASCADE"), primary_key=True),
 )
 
@@ -28,7 +31,12 @@ class User(Base):
     """
     __tablename__ = "users"
     
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True
+    )
     
     # Personal Information
     first_name: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -58,6 +66,12 @@ class User(Base):
     )
     password_reset_tokens: Mapped[list["PasswordResetToken"]] = relationship(
         "PasswordResetToken",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+    ideas: Mapped[list["Idea"]] = relationship(
+        "Idea",
+        foreign_keys="Idea.user_id",
         back_populates="user",
         cascade="all, delete-orphan"
     )

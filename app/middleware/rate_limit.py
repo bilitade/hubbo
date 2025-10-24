@@ -23,10 +23,11 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.request_history: Dict[str, list] = defaultdict(list)
         
         # Sensitive endpoints that need stricter limits
+        # Increased for development - adjust for production
         self.sensitive_endpoints = {
-            "/api/v1/auth/login": (20, 50),  # 5/min, 20/hour
-            "/api/v1/auth/refresh": (20, 50),  # 10/min, 50/hour
-            "/api/v1/users/register": (10, 15),  # 3/min, 10/hour
+            "/api/v1/auth/login": (100, 500),  # High limits for dev
+            "/api/v1/auth/refresh": (100, 500),  # High limits for dev
+            "/api/v1/users/register": (50, 200),  # High limits for dev
         }
         
         # Start cleanup task

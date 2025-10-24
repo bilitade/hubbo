@@ -59,10 +59,11 @@ app.add_middleware(
 app.add_middleware(SecurityHeadersMiddleware)
 
 # Add rate limiting to prevent brute force attacks
+# Increased limits for development - adjust for production
 app.add_middleware(
     RateLimitMiddleware,
-    requests_per_minute=60,  # General rate limit
-    requests_per_hour=1000
+    requests_per_minute=1000,  # Very high limit for development
+    requests_per_hour=10000    # Very high limit for development
 )
 
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)

@@ -1,5 +1,6 @@
 """Common FastAPI dependencies for authentication and database access."""
 from typing import Optional
+import uuid
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
@@ -38,7 +39,7 @@ def get_current_user(
         )
     
     try:
-        user_id = int(user_id_str)
+        user_id = uuid.UUID(user_id_str)
     except (TypeError, ValueError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

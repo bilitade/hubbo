@@ -37,6 +37,7 @@ from app.schemas.task import (
     TaskResponsibleUserResponse,
 )
 from app.middleware.rbac import require_permission
+from app.utils.project_progress import auto_update_task_status
 
 router = APIRouter()
 
@@ -56,11 +57,15 @@ def create_task(
 ):
     """
     Create a new task with optional activities.
+    Auto-determines status: unassigned if no one assigned, in_progress if assigned
     """
+    # Auto-determine initial status
+    initial_status = "in_progress" if task_data.assigned_to else "unassigned"
+    
     task = Task(
         title=task_data.title,
         description=task_data.description,
-        status=task_data.status,
+        status=initial_status,
         backlog=task_data.backlog,
         idea_id=task_data.idea_id,
         project_id=task_data.project_id,
@@ -226,6 +231,7 @@ def get_task(
 ):
     """
     Get a specific task by ID with all details.
+    Auto-updates status based on activities.
     """
     task = db.query(Task).filter(Task.id == task_id).first()
     
@@ -245,6 +251,13 @@ def get_task(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to access this task"
         )
+    
+    # Auto-update task status based on activities
+    new_status = auto_update_task_status(db, task)
+    if task.status != new_status:
+        task.status = new_status
+        db.commit()
+        db.refresh(task)
     
     return task
 
@@ -282,12 +295,15 @@ def update_task(
     # Track changes for logging
     changes = []
     update_data = task_data.model_dump(exclude_unset=True)
+    assignment_changed = False
     
     for field, value in update_data.items():
         old_value = getattr(task, field)
         if old_value != value:
             changes.append(f"{field}: {old_value} -> {value}")
             setattr(task, field, value)
+            if field == 'assigned_to':
+                assignment_changed = True
     
     # Log the update
     if changes:
@@ -301,6 +317,24 @@ def update_task(
     
     db.commit()
     db.refresh(task)
+    
+    # Auto-update task status if assignment changed
+    if assignment_changed:
+        new_status = auto_update_task_status(db, task)
+        if task.status != new_status:
+            task.status = new_status
+            
+            # Log the auto status change
+            status_log = TaskActivityLog(
+                task_id=task.id,
+                user_id=current_user.id,
+                action="status_auto_updated",
+                details=f"Task status auto-updated to '{new_status}' due to assignment change",
+            )
+            db.add(status_log)
+            
+            db.commit()
+            db.refresh(task)
     
     return task
 
@@ -448,6 +482,25 @@ def update_task_activity(
     
     db.commit()
     db.refresh(activity)
+    
+    # Auto-update task status based on activities
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if task:
+        new_status = auto_update_task_status(db, task)
+        if task.status != new_status:
+            task.status = new_status
+            
+            # Log the status change
+            status_log = TaskActivityLog(
+                task_id=task_id,
+                user_id=current_user.id,
+                action="status_auto_updated",
+                details=f"Task status auto-updated to '{new_status}' based on activities",
+            )
+            db.add(status_log)
+            
+            db.commit()
+            db.refresh(task)
     
     return activity
 

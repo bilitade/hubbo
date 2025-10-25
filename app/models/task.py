@@ -45,9 +45,9 @@ class Task(Base):
     # Status
     status: Mapped[str] = mapped_column(
         String(50),
-        default="in_progress",
+        default="unassigned",
         nullable=False
-    )  # in_progress, completed, blocked, cancelled
+    )  # unassigned, in_progress, done
     backlog: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     
     # Timestamps

@@ -56,9 +56,9 @@ class Project(Base):
     # Status & Workflow
     status: Mapped[str] = mapped_column(
         String(50),
-        default="recent",
+        default="planning",
         nullable=False
-    )  # recent, in_progress, completed, on_hold, cancelled
+    )  # planning, not_started, in_progress, done
     workflow_step: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     backlog: Mapped[str] = mapped_column(
         String(50),

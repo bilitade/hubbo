@@ -22,6 +22,7 @@ from app.schemas.project import (
     ProjectWithTasksResponse,
 )
 from app.middleware.rbac import require_permission
+from app.utils.project_progress import calculate_project_progress, auto_update_project_status
 
 router = APIRouter()
 
@@ -58,7 +59,7 @@ def create_project(
         project_brief=project_data.project_brief,
         desired_outcomes=project_data.desired_outcomes,
         project_number=project_number,
-        status=project_data.status,
+        status="planning",  # Always start with planning status
         backlog=project_data.backlog,
         workflow_step=project_data.workflow_step,
         owner_id=project_data.owner_id or current_user.id,
@@ -90,7 +91,7 @@ def list_projects(
     _: bool = Depends(require_permission("view_user")),
 ):
     """
-    List projects with filtering and pagination.
+    List projects with filtering, pagination, and task statistics.
     """
     query = db.query(Project)
     
@@ -127,8 +128,39 @@ def list_projects(
     total = query.count()
     projects = query.offset(skip).limit(limit).all()
     
+    # Calculate progress for each project
+    enriched_projects = []
+    for project in projects:
+        # Auto-update status
+        new_status = auto_update_project_status(db, project)
+        if project.status != new_status:
+            project.status = new_status
+            db.commit()
+            db.refresh(project)
+        
+        # Calculate progress
+        progress_percentage, total_items, completed_items, tasks_count, completed_tasks_count = calculate_project_progress(db, project.id)
+        
+        # Add statistics to project dict
+        project_dict = {
+            **project.__dict__,
+            "progress_percentage": progress_percentage,
+            "tasks_count": tasks_count,
+            "completed_tasks_count": completed_tasks_count,
+            "unassigned_tasks_count": db.query(func.count(Task.id)).filter(
+                Task.project_id == project.id,
+                Task.status == "unassigned"
+            ).scalar() or 0,
+            "in_progress_tasks_count": db.query(func.count(Task.id)).filter(
+                Task.project_id == project.id,
+                Task.status == "in_progress"
+            ).scalar() or 0,
+        }
+        
+        enriched_projects.append(project_dict)
+    
     return ProjectListResponse(
-        projects=projects,
+        projects=enriched_projects,
         total=total,
         page=skip // limit + 1,
         page_size=limit,
@@ -166,21 +198,22 @@ def get_project(
             detail="Not authorized to access this project"
         )
     
-    # Calculate task statistics
-    tasks_count = db.query(func.count(Task.id)).filter(Task.project_id == project_id).scalar()
-    completed_tasks_count = db.query(func.count(Task.id)).filter(
-        Task.project_id == project_id,
-        Task.status == "completed"
-    ).scalar()
+    # Auto-update project status based on tasks
+    new_status = auto_update_project_status(db, project)
+    if project.status != new_status:
+        project.status = new_status
+        db.commit()
+        db.refresh(project)
     
-    progress_percentage = (completed_tasks_count / tasks_count * 100) if tasks_count > 0 else 0
+    # Calculate progress including tasks and subtasks
+    progress_percentage, total_items, completed_items, tasks_count, completed_tasks_count = calculate_project_progress(db, project_id)
     
     # Convert to response model
     project_dict = {
         **project.__dict__,
         "tasks_count": tasks_count,
         "completed_tasks_count": completed_tasks_count,
-        "progress_percentage": round(progress_percentage, 2),
+        "progress_percentage": progress_percentage,
     }
     
     return ProjectWithTasksResponse(**project_dict)

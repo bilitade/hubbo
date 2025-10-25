@@ -10,7 +10,7 @@ class ProjectBase(BaseModel):
     description: Optional[str] = None
     project_brief: str = Field(..., min_length=1)
     desired_outcomes: str = Field(..., min_length=1)
-    status: str = Field(default="recent")
+    status: str = Field(default="planning")  # planning, not_started, in_progress, done
     backlog: str = Field(default="business_innovation")
     departments: List[str] = Field(default_factory=list)
 
@@ -82,6 +82,12 @@ class ProjectResponse(ProjectBase):
     is_archived: bool
     created_at: datetime
     updated_at: datetime
+    # Task statistics (optional, added by list endpoint)
+    progress_percentage: Optional[float] = None
+    tasks_count: Optional[int] = None
+    completed_tasks_count: Optional[int] = None
+    unassigned_tasks_count: Optional[int] = None
+    in_progress_tasks_count: Optional[int] = None
     
     class Config:
         from_attributes = True

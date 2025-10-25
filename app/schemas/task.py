@@ -107,7 +107,7 @@ class TaskBase(BaseModel):
     """Base task schema."""
     title: str = Field(..., min_length=1, max_length=500)
     description: Optional[str] = None
-    status: str = Field(default="in_progress")
+    status: str = Field(default="unassigned")  # unassigned, in_progress, done
     backlog: Optional[str] = None
 
 

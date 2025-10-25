@@ -388,7 +388,7 @@ def create_sample_data(db: Session):
         project_brief="Major platform upgrade focusing on performance, scalability, and new features.",
         desired_outcomes="Improved performance by 50%, support for 10x more users, 5 new features launched.",
         project_number="PRJ-00001",
-        status="in_progress",
+        status="in_progress",  # planning, not_started, in_progress, done
         backlog="business_innovation",
         workflow_step=2,
         owner_id=admin.id,
@@ -405,7 +405,7 @@ def create_sample_data(db: Session):
         project_id=project.id,
         title="Setup development environment",
         description="Configure development environment with all necessary tools and dependencies.",
-        status="completed",
+        status="done",  # unassigned, in_progress, done
         owner_id=admin.id,
         assigned_to=admin.id,
     )
@@ -422,7 +422,7 @@ def create_sample_data(db: Session):
         project_id=project.id,
         title="Implement new authentication flow",
         description="Implement OAuth2 authentication with JWT tokens.",
-        status="in_progress",
+        status="in_progress",  # unassigned, in_progress, done
         owner_id=admin.id,
         assigned_to=admin.id,
     )
@@ -436,7 +436,18 @@ def create_sample_data(db: Session):
         TaskActivity(task_id=task2.id, title="Add refresh token rotation", completed=False),
     ])
     
-    print("  ✓ Created 2 sample tasks with activities")
+    task3 = Task(
+        project_id=project.id,
+        title="Design API endpoints",
+        description="Design RESTful API endpoints for the new features.",
+        status="unassigned",  # unassigned, in_progress, done
+        owner_id=admin.id,
+        assigned_to=None,  # Unassigned task
+    )
+    db.add(task3)
+    db.flush()
+    
+    print("  ✓ Created 3 sample tasks with activities")
     
     # Create sample experiment
     experiment = Experiment(

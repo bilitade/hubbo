@@ -24,12 +24,7 @@ from app.schemas.file import (
     FileListResponse,
     FileDeleteResponse,
 )
-from app.schemas.profile import (
-    ProfileCreate,
-    ProfileUpdate,
-    ProfileDisable,
-    ProfileResponse,
-)
+
 from app.schemas.idea import (
     IdeaCreate,
     IdeaUpdate,

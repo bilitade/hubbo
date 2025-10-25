@@ -10,8 +10,16 @@ class UserBase(BaseModel):
     first_name: str = Field(..., min_length=1, max_length=100, examples=["John"])
     middle_name: str = Field(..., min_length=1, max_length=100, examples=["Michael"])
     last_name: str = Field(..., min_length=1, max_length=100, examples=["Doe"])
-    role_title: Optional[str] = Field(None, max_length=100, examples=["Software Engineer"])
     email: EmailStr = Field(..., examples=["john.doe@example.com"])
+    
+    # Optional profile fields
+    display_name: Optional[str] = Field(None, max_length=255, description="Preferred display name")
+    avatar_url: Optional[str] = Field(None, description="Avatar image URL")
+    bio: Optional[str] = Field(None, description="User biography")
+    phone: Optional[str] = Field(None, max_length=20, description="Phone number")
+    position: Optional[str] = Field(None, max_length=100, description="Job position/title")
+    team: Optional[str] = Field(None, max_length=100, description="Team name")
+    department: Optional[str] = Field(None, max_length=100, description="Department name")
 
 
 class UserRegister(UserBase):
@@ -51,9 +59,18 @@ class UserProfileUpdate(BaseModel):
     first_name: Optional[str] = Field(None, min_length=1, max_length=100)
     middle_name: Optional[str] = Field(None, min_length=1, max_length=100)
     last_name: Optional[str] = Field(None, min_length=1, max_length=100)
-    role_title: Optional[str] = Field(None, max_length=100)
     email: Optional[EmailStr] = None
+    current_password: Optional[str] = Field(None, description="Current password (required when changing password)")
     password: Optional[str] = Field(None, min_length=8, max_length=100)
+    
+    # Optional profile fields
+    display_name: Optional[str] = Field(None, max_length=255)
+    avatar_url: Optional[str] = None
+    bio: Optional[str] = None
+    phone: Optional[str] = Field(None, max_length=20)
+    position: Optional[str] = Field(None, max_length=100)
+    team: Optional[str] = Field(None, max_length=100)
+    department: Optional[str] = Field(None, max_length=100)
     
     @field_validator("password")
     @classmethod
@@ -77,12 +94,20 @@ class UserAdminUpdate(BaseModel):
     first_name: Optional[str] = Field(None, min_length=1, max_length=100)
     middle_name: Optional[str] = Field(None, min_length=1, max_length=100)
     last_name: Optional[str] = Field(None, min_length=1, max_length=100)
-    role_title: Optional[str] = Field(None, max_length=100)
     email: Optional[EmailStr] = None
     password: Optional[str] = Field(None, min_length=8, max_length=100)
     role_names: Optional[List[str]] = None
     is_active: Optional[bool] = None
     is_approved: Optional[bool] = None
+    
+    # Optional profile fields
+    display_name: Optional[str] = Field(None, max_length=255)
+    avatar_url: Optional[str] = None
+    bio: Optional[str] = None
+    phone: Optional[str] = Field(None, max_length=20)
+    position: Optional[str] = Field(None, max_length=100)
+    team: Optional[str] = Field(None, max_length=100)
+    department: Optional[str] = Field(None, max_length=100)
 
 
 class UserResponse(UserBase):
@@ -92,24 +117,36 @@ class UserResponse(UserBase):
     is_approved: bool
     roles: List[RoleResponse] = Field(default_factory=list)
     
+    # Computed fields (from model properties)
+    full_name: Optional[str] = None
+    preferred_name: Optional[str] = None
+    
     model_config = ConfigDict(
         from_attributes=True,
         json_schema_extra={
             "example": {
-                "id": 1,
+                "id": "550e8400-e29b-41d4-a716-446655440000",
                 "first_name": "John",
                 "middle_name": "Michael",
                 "last_name": "Doe",
-                "role_title": "Software Engineer",
                 "email": "john.doe@example.com",
+                "display_name": "Johnny",
+                "avatar_url": "https://example.com/avatar.jpg",
+                "bio": "Software engineer passionate about clean code",
+                "phone": "+1234567890",
+                "position": "Senior Software Engineer",
+                "team": "Engineering",
+                "department": "Product Development",
                 "is_active": True,
                 "is_approved": True,
+                "full_name": "John Michael Doe",
+                "preferred_name": "Johnny",
                 "roles": [
                     {
                         "id": 1,
                         "name": "admin",
                         "permissions": [
-                            {"id": 1, "name": "create_user"}
+                            {"id": 1, "name": "users:view"}
                         ]
                     }
                 ]

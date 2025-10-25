@@ -15,9 +15,9 @@ router = APIRouter()
 def create_role(
     role_data: RoleCreate,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_permission("manage_roles"))
+    _: bool = Depends(require_permission("roles:create"))
 ) -> Any:
-    """Create new role (requires 'manage_roles' permission)."""
+    """Create new role (requires 'roles:create' permission)."""
     existing_role = db.query(Role).filter(Role.name == role_data.name).first()
     if existing_role:
         raise HTTPException(
@@ -25,7 +25,7 @@ def create_role(
             detail="Role with this name already exists"
         )
     
-    new_role = Role(name=role_data.name)
+    new_role = Role(name=role_data.name, description=role_data.description)
     db.add(new_role)
     db.commit()
     db.refresh(new_role)
@@ -45,9 +45,9 @@ def create_role(
 def read_role(
     role_id: int,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_permission("manage_roles"))
+    _: bool = Depends(require_permission("roles:view"))
 ) -> Any:
-    """Get role by ID (requires 'manage_roles' permission)."""
+    """Get role by ID (requires 'roles:view' permission)."""
     role = db.query(Role).filter(Role.id == role_id).first()
     if not role:
         raise HTTPException(
@@ -62,9 +62,9 @@ def list_roles(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_permission("manage_roles"))
+    _: bool = Depends(require_permission("roles:view"))
 ) -> Any:
-    """List roles with pagination (requires 'manage_roles' permission)."""
+    """List roles with pagination (requires 'roles:view' permission)."""
     roles = db.query(Role).offset(skip).limit(limit).all()
     return roles
 
@@ -74,9 +74,9 @@ def update_role(
     role_id: int,
     role_data: RoleUpdate,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_permission("manage_roles"))
+    _: bool = Depends(require_permission("roles:edit"))
 ) -> Any:
-    """Admin: Update role (partial, requires 'manage_roles' permission)."""
+    """Admin: Update role (partial, requires 'roles:edit' permission)."""
     role = db.query(Role).filter(Role.id == role_id).first()
     if not role:
         raise HTTPException(
@@ -96,6 +96,9 @@ def update_role(
             )
         role.name = role_data.name
     
+    if role_data.description is not None:
+        role.description = role_data.description
+    
     if role_data.permission_names is not None:
         permissions = db.query(Permission).filter(
             Permission.name.in_(role_data.permission_names)
@@ -111,9 +114,9 @@ def update_role(
 def delete_role(
     role_id: int,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_permission("manage_roles"))
+    _: bool = Depends(require_permission("roles:delete"))
 ) -> None:
-    """Delete role (requires 'manage_roles' permission)."""
+    """Delete role (requires 'roles:delete' permission)."""
     role = db.query(Role).filter(Role.id == role_id).first()
     if not role:
         raise HTTPException(

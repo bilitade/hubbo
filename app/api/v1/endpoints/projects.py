@@ -86,25 +86,28 @@ def list_projects(
     is_archived: Optional[bool] = None,
     backlog: Optional[str] = None,
     search: Optional[str] = None,
+    my_items_only: bool = Query(False, description="Filter to only current user's items"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-    _: bool = Depends(require_permission("view_user")),
+    _: bool = Depends(require_permission("projects:view")),
 ):
     """
     List projects with filtering, pagination, and task statistics.
+    Users with 'projects:view' permission can see all projects unless my_items_only=True.
     """
     query = db.query(Project)
     
-    # Filter by user's projects or projects where user is involved
-    query = query.filter(
-        or_(
-            Project.owner_id == current_user.id,
-            Project.responsible_id == current_user.id,
-            Project.accountable_id == current_user.id,
-            Project.consulted_ids.any(current_user.id),
-            Project.informed_ids.any(current_user.id),
+    # Optionally filter by user's projects
+    if my_items_only:
+        query = query.filter(
+            or_(
+                Project.owner_id == current_user.id,
+                Project.responsible_id == current_user.id,
+                Project.accountable_id == current_user.id,
+                Project.consulted_ids.any(current_user.id),
+                Project.informed_ids.any(current_user.id),
+            )
         )
-    )
     
     # Apply filters
     if status:

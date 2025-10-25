@@ -1,7 +1,7 @@
 """User model with role relationships."""
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 import uuid
-from sqlalchemy import Column, Integer, String, Table, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, Table, ForeignKey, Boolean, Text
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID
 from app.db.base import Base
@@ -42,11 +42,19 @@ class User(Base):
     first_name: Mapped[str] = mapped_column(String(100), nullable=False)
     middle_name: Mapped[str] = mapped_column(String(100), nullable=False)
     last_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    role_title: Mapped[str] = mapped_column(String(100), nullable=True)
     
     # Authentication
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     password: Mapped[str] = mapped_column(String(255), nullable=False)
+    
+    # Extended Profile Information (Optional)
+    display_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    avatar_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    bio: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    phone: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    position: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    team: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    department: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     
     # Account Status
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
@@ -75,6 +83,17 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan"
     )
+    
+    # Computed Properties
+    @property
+    def full_name(self) -> str:
+        """Returns the full name: first + middle + last"""
+        return f"{self.first_name} {self.middle_name} {self.last_name}"
+    
+    @property
+    def preferred_name(self) -> str:
+        """Returns display_name if set, otherwise full_name"""
+        return self.display_name or self.full_name
     
     def __repr__(self) -> str:
         return f"<User(id={self.id}, email='{self.email}')>"

@@ -34,11 +34,18 @@ def register_user(user_data: UserRegister, db: Session = Depends(get_db)) -> Any
         first_name=user_data.first_name,
         middle_name=user_data.middle_name,
         last_name=user_data.last_name,
-        role_title=user_data.role_title,
         email=user_data.email,
         password=hash_password(user_data.password),
         is_active=True,
-        is_approved=False  # Admin approval required
+        is_approved=False,  # Admin approval required
+        # Optional profile fields
+        display_name=user_data.display_name,
+        avatar_url=user_data.avatar_url,
+        bio=user_data.bio,
+        phone=user_data.phone,
+        position=user_data.position,
+        team=user_data.team,
+        department=user_data.department
     )
     
     # Assign default "user" role if it exists
@@ -56,7 +63,7 @@ def register_user(user_data: UserRegister, db: Session = Depends(get_db)) -> Any
 def create_user(
     user_data: UserCreate,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_permission("create_user"))
+    _: bool = Depends(require_permission("users:create"))
 ) -> Any:
     """Admin: Create user with roles (requires 'create_user' permission)."""
     existing_user = db.query(User).filter(User.email == user_data.email).first()
@@ -70,11 +77,18 @@ def create_user(
         first_name=user_data.first_name,
         middle_name=user_data.middle_name,
         last_name=user_data.last_name,
-        role_title=user_data.role_title,
         email=user_data.email,
         password=hash_password(user_data.password),
         is_active=True,
-        is_approved=True
+        is_approved=True,
+        # Optional profile fields
+        display_name=user_data.display_name,
+        avatar_url=user_data.avatar_url,
+        bio=user_data.bio,
+        phone=user_data.phone,
+        position=user_data.position,
+        team=user_data.team,
+        department=user_data.department
     )
     
     if user_data.role_names:
@@ -109,8 +123,21 @@ def update_current_user(
     if user_data.last_name is not None:
         current_user.last_name = user_data.last_name
     
-    if user_data.role_title is not None:
-        current_user.role_title = user_data.role_title
+    # Update profile fields
+    if user_data.display_name is not None:
+        current_user.display_name = user_data.display_name
+    if user_data.avatar_url is not None:
+        current_user.avatar_url = user_data.avatar_url
+    if user_data.bio is not None:
+        current_user.bio = user_data.bio
+    if user_data.phone is not None:
+        current_user.phone = user_data.phone
+    if user_data.position is not None:
+        current_user.position = user_data.position
+    if user_data.team is not None:
+        current_user.team = user_data.team
+    if user_data.department is not None:
+        current_user.department = user_data.department
     
     if user_data.email is not None:
         existing = db.query(User).filter(
@@ -125,6 +152,20 @@ def update_current_user(
         current_user.email = user_data.email
     
     if user_data.password is not None:
+        # Verify current password before changing
+        if not hasattr(user_data, 'current_password') or not user_data.current_password:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Current password is required to change password"
+            )
+        
+        from app.core.security import verify_password
+        if not verify_password(user_data.current_password, current_user.password):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Current password is incorrect"
+            )
+        
         current_user.password = hash_password(user_data.password)
     
     db.commit()
@@ -136,7 +177,7 @@ def update_current_user(
 def read_user(
     user_id: UUID,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_permission("view_user"))
+    _: bool = Depends(require_permission("users:view"))
 ) -> Any:
     """Get user by ID (requires 'view_user' permission)."""
     user = db.query(User).filter(User.id == user_id).first()
@@ -153,7 +194,7 @@ def list_users(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_permission("view_user"))
+    _: bool = Depends(require_permission("users:view"))
 ) -> Any:
     """List users with pagination (requires 'view_user' permission)."""
     users = db.query(User).offset(skip).limit(limit).all()
@@ -165,7 +206,7 @@ def update_user(
     user_id: UUID,
     user_data: UserAdminUpdate,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_permission("edit_user"))
+    _: bool = Depends(require_permission("users:edit"))
 ) -> Any:
     """Admin: Update user (partial, requires 'edit_user' permission)."""
     user = db.query(User).filter(User.id == user_id).first()
@@ -184,8 +225,21 @@ def update_user(
     if user_data.last_name is not None:
         user.last_name = user_data.last_name
     
-    if user_data.role_title is not None:
-        user.role_title = user_data.role_title
+    # Update profile fields
+    if user_data.display_name is not None:
+        user.display_name = user_data.display_name
+    if user_data.avatar_url is not None:
+        user.avatar_url = user_data.avatar_url
+    if user_data.bio is not None:
+        user.bio = user_data.bio
+    if user_data.phone is not None:
+        user.phone = user_data.phone
+    if user_data.position is not None:
+        user.position = user_data.position
+    if user_data.team is not None:
+        user.team = user_data.team
+    if user_data.department is not None:
+        user.department = user_data.department
     
     if user_data.email is not None:
         existing = db.query(User).filter(
@@ -221,9 +275,9 @@ def update_user(
 def approve_user(
     user_id: UUID,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_permission("edit_user"))
+    _: bool = Depends(require_permission("users:approve"))
 ) -> Any:
-    """Admin: Approve user (requires 'edit_user' permission)."""
+    """Admin: Approve user (requires 'users:approve' permission)."""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(
@@ -241,7 +295,7 @@ def approve_user(
 def delete_user(
     user_id: UUID,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_permission("delete_user"))
+    _: bool = Depends(require_permission("users:delete"))
 ) -> None:
     """Delete user (requires 'delete_user' permission)."""
     user = db.query(User).filter(User.id == user_id).first()

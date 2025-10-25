@@ -14,9 +14,9 @@ router = APIRouter()
 def create_permission(
     permission_data: PermissionCreate,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_permission("manage_permissions"))
+    _: bool = Depends(require_permission("permissions:create"))
 ) -> Any:
-    """Create new permission (requires 'manage_permissions' permission)."""
+    """Create new permission (requires 'permissions:create' permission)."""
     existing_permission = db.query(Permission).filter(
         Permission.name == permission_data.name
     ).first()
@@ -37,9 +37,9 @@ def create_permission(
 def read_permission(
     permission_id: int,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_permission("manage_permissions"))
+    _: bool = Depends(require_permission("permissions:view"))
 ) -> Any:
-    """Get permission by ID (requires 'manage_permissions' permission)."""
+    """Get permission by ID (requires 'permissions:view' permission)."""
     permission = db.query(Permission).filter(Permission.id == permission_id).first()
     if not permission:
         raise HTTPException(
@@ -54,9 +54,9 @@ def list_permissions(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_permission("manage_permissions"))
+    _: bool = Depends(require_permission("permissions:view"))
 ) -> Any:
-    """List permissions with pagination (requires 'manage_permissions' permission)."""
+    """List permissions with pagination (requires 'permissions:view' permission)."""
     permissions = db.query(Permission).offset(skip).limit(limit).all()
     return permissions
 
@@ -65,9 +65,9 @@ def list_permissions(
 def delete_permission(
     permission_id: int,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_permission("manage_permissions"))
+    _: bool = Depends(require_permission("permissions:delete"))
 ) -> None:
-    """Delete permission (requires 'manage_permissions' permission)."""
+    """Delete permission (requires 'permissions:delete' permission)."""
     permission = db.query(Permission).filter(Permission.id == permission_id).first()
     if not permission:
         raise HTTPException(

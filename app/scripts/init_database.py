@@ -2,10 +2,10 @@
 Unified Hubbo Database Initialization Script.
 
 This script initializes the complete Hubbo database with:
-- All database tables (users, roles, permissions, profiles, ideas, projects, tasks, experiments)
+- All database tables (users, roles, permissions, ideas, projects, tasks, experiments)
 - Default permissions (comprehensive set)
-- Default roles (admin, manager, user, guest)
-- Default users with profiles
+- Default roles (admin, manager, team_member, viewer)
+- Default users with profile information
 - Optional sample data for testing
 
 Usage:
@@ -26,7 +26,6 @@ from app.db.base import Base, import_models
 from app.models.user import User
 from app.models.role import Role
 from app.models.permission import Permission
-from app.models.profile import Profile
 from app.core.security import hash_password
 
 
@@ -34,51 +33,73 @@ from app.core.security import hash_password
 # COMPREHENSIVE PERMISSIONS FOR HUBBO
 # ============================================================
 DEFAULT_PERMISSIONS = [
-    # User management
+    # User management (granular)
+    "users:view",
+    "users:create",
+    "users:edit",
+    "users:delete",
+    "users:approve",
+    "users:disable",
+    "users:manage_roles",
+    
+    # Role management
+    "roles:view",
+    "roles:create",
+    "roles:edit",
+    "roles:delete",
+    "roles:assign_permissions",
+    
+    # Permission management
+    "permissions:view",
+    "permissions:create",
+    "permissions:delete",
+    
+    
+    # AI features
+    "ai:use",
+    "ai:manage",
+    
+    # File operations
+    "files:view",
+    "files:upload",
+    "files:delete",
+    "files:manage_all",
+    
+    # Ideas
+    "ideas:view",
+    "ideas:create",
+    "ideas:edit",
+    "ideas:delete",
+    "ideas:archive",
+    "ideas:move_to_project",
+    
+    # Projects
+    "projects:view",
+    "projects:create",
+    "projects:edit",
+    "projects:delete",
+    "projects:archive",
+    "projects:manage_workflow",
+    
+    # Tasks
+    "tasks:view",
+    "tasks:create",
+    "tasks:edit",
+    "tasks:delete",
+    "tasks:manage_activities",
+    "tasks:assign",
+    
+    # Experiments
+    "experiments:view",
+    "experiments:create",
+    "experiments:edit",
+    "experiments:delete",
+    
+    # Legacy permissions (for backward compatibility)
     "create_user",
     "delete_user",
     "view_user",
     "edit_user",
-    
-    # Role & Permission management
-    "manage_roles",
-    "manage_permissions",
-    
-    # AI features
-    "use_ai",
-    "manage_ai",
-    
-    # File operations
-    "user:read",
-    "user:write",
-    
-    # Ideas
-    "create_idea",
-    "edit_idea",
-    "delete_idea",
-    "view_idea",
-    "archive_idea",
-    
-    # Projects
-    "create_project",
-    "edit_project",
-    "delete_project",
-    "view_project",
-    "archive_project",
-    "manage_project_workflow",
-    
-    # Tasks
-    "create_task",
-    "edit_task",
-    "delete_task",
-    "view_task",
-    "manage_task_activities",
-    
-    # Experiments
-    "create_experiment",
-    "edit_experiment",
-    "delete_experiment",
-    "view_experiment",
 ]
 
 
@@ -93,7 +114,6 @@ def drop_all_tables():
             "experiments",
             "projects",
             "ideas",
-            "profiles",
             "password_reset_tokens",
             "refresh_tokens",
             "user_roles",
@@ -141,84 +161,110 @@ def create_roles(db: Session, permissions: list):
     perm_dict = {p.name: p for p in permissions}
     
     # Admin role - ALL permissions
-    admin_role = Role(name="admin")
+    admin_role = Role(name="admin", description="Full system access")
     admin_role.permissions = permissions
     db.add(admin_role)
     
     # Manager role - Project and team management
-    manager_role = Role(name="manager")
+    manager_role = Role(name="manager", description="Manage projects, teams, and workflows")
     manager_role.permissions = [
-        perm_dict["view_user"],
-        perm_dict["edit_user"],
-        perm_dict["use_ai"],
-        perm_dict["user:read"],
-        perm_dict["user:write"],
-        perm_dict["create_idea"],
-        perm_dict["edit_idea"],
-        perm_dict["view_idea"],
-        perm_dict["archive_idea"],
-        perm_dict["create_project"],
-        perm_dict["edit_project"],
-        perm_dict["view_project"],
-        perm_dict["archive_project"],
-        perm_dict["manage_project_workflow"],
-        perm_dict["create_task"],
-        perm_dict["edit_task"],
-        perm_dict["view_task"],
-        perm_dict["manage_task_activities"],
-        perm_dict["create_experiment"],
-        perm_dict["edit_experiment"],
-        perm_dict["view_experiment"],
+        # User management (view only)
+        perm_dict["users:view"],
+        perm_dict["users:edit"],
+        
+        # Full access to projects, ideas, tasks
+        perm_dict["ideas:view"],
+        perm_dict["ideas:create"],
+        perm_dict["ideas:edit"],
+        perm_dict["ideas:archive"],
+        perm_dict["ideas:move_to_project"],
+        
+        perm_dict["projects:view"],
+        perm_dict["projects:create"],
+        perm_dict["projects:edit"],
+        perm_dict["projects:archive"],
+        perm_dict["projects:manage_workflow"],
+        
+        perm_dict["tasks:view"],
+        perm_dict["tasks:create"],
+        perm_dict["tasks:edit"],
+        perm_dict["tasks:assign"],
+        perm_dict["tasks:manage_activities"],
+        
+        perm_dict["experiments:view"],
+        perm_dict["experiments:create"],
+        perm_dict["experiments:edit"],
+        
+        # AI and files
+        perm_dict["ai:use"],
+        perm_dict["files:view"],
+        perm_dict["files:upload"],
+        perm_dict["files:delete"],
+        
+        # View roles/permissions
+        perm_dict["roles:view"],
+        perm_dict["permissions:view"],
     ]
     db.add(manager_role)
     
-    # User role - Standard user access
-    user_role = Role(name="user")
-    user_role.permissions = [
-        perm_dict["view_user"],
-        perm_dict["use_ai"],
-        perm_dict["user:read"],
-        perm_dict["user:write"],
-        perm_dict["create_idea"],
-        perm_dict["edit_idea"],
-        perm_dict["view_idea"],
-        perm_dict["view_project"],
-        perm_dict["create_task"],
-        perm_dict["edit_task"],
-        perm_dict["view_task"],
-        perm_dict["manage_task_activities"],
-        perm_dict["view_experiment"],
+    # Team Member role - Standard user access
+    team_member_role = Role(name="team_member", description="Standard team member access")
+    team_member_role.permissions = [
+        perm_dict["users:view"],
+        
+        perm_dict["ideas:view"],
+        perm_dict["ideas:create"],
+        perm_dict["ideas:edit"],
+        
+        perm_dict["projects:view"],
+        perm_dict["projects:create"],
+        perm_dict["projects:edit"],
+        
+        perm_dict["tasks:view"],
+        perm_dict["tasks:create"],
+        perm_dict["tasks:edit"],
+        perm_dict["tasks:manage_activities"],
+        
+        perm_dict["experiments:view"],
+        perm_dict["experiments:create"],
+        
+        perm_dict["ai:use"],
+        perm_dict["files:view"],
+        perm_dict["files:upload"],
     ]
-    db.add(user_role)
+    db.add(team_member_role)
     
-    # Guest role - Read-only access
-    guest_role = Role(name="guest")
-    guest_role.permissions = [
-        perm_dict["view_user"],
-        perm_dict["view_idea"],
-        perm_dict["view_project"],
-        perm_dict["view_task"],
-        perm_dict["view_experiment"],
+    # Viewer role - Read-only access
+    viewer_role = Role(name="viewer", description="Read-only access")
+    viewer_role.permissions = [
+        perm_dict["users:view"],
+        perm_dict["ideas:view"],
+        perm_dict["projects:view"],
+        perm_dict["tasks:view"],
+        perm_dict["experiments:view"],
+        perm_dict["files:view"],
+        perm_dict["roles:view"],
+        perm_dict["permissions:view"],
     ]
-    db.add(guest_role)
+    db.add(viewer_role)
     
     db.commit()
     print(f"✓ Created 4 roles (admin: {len(admin_role.permissions)} perms, "
           f"manager: {len(manager_role.permissions)} perms, "
-          f"user: {len(user_role.permissions)} perms, "
-          f"guest: {len(guest_role.permissions)} perms)")
+          f"team_member: {len(team_member_role.permissions)} perms, "
+          f"viewer: {len(viewer_role.permissions)} perms)")
     
     return {
         "admin": admin_role,
         "manager": manager_role,
-        "user": user_role,
-        "guest": guest_role
+        "team_member": team_member_role,
+        "viewer": viewer_role
     }
 
 
 def create_users(db: Session, roles: dict):
-    """Create default users with profiles."""
-    print("\n👤 Creating users with profiles...")
+    """Create default users."""
+    print("\n👤 Creating users...")
     
     users_data = [
         {
@@ -227,15 +273,14 @@ def create_users(db: Session, roles: dict):
             "first_name": "Admin",
             "middle_name": "System",
             "last_name": "User",
-            "role_title": "System Administrator",
+            "display_name": "Admin User",
+            "team": "Engineering",
+            "department": "IT",
+            "position": "System Administrator",
+            "bio": "System administrator with full access",
             "is_active": True,
             "is_approved": True,
             "roles": [roles["admin"]],
-            "profile": {
-                "display_name": "Admin User",
-                "team": "Engineering",
-                "position": "System Administrator",
-            }
         },
         {
             "email": "manager@example.com",
@@ -243,15 +288,14 @@ def create_users(db: Session, roles: dict):
             "first_name": "Manager",
             "middle_name": "Test",
             "last_name": "User",
-            "role_title": "Project Manager",
+            "display_name": "Manager User",
+            "team": "Product",
+            "department": "Product Management",
+            "position": "Project Manager",
+            "bio": "Project manager overseeing team operations",
             "is_active": True,
             "is_approved": True,
             "roles": [roles["manager"]],
-            "profile": {
-                "display_name": "Manager User",
-                "team": "Product",
-                "position": "Project Manager",
-            }
         },
         {
             "email": "user@example.com",
@@ -259,15 +303,14 @@ def create_users(db: Session, roles: dict):
             "first_name": "Regular",
             "middle_name": "Test",
             "last_name": "User",
-            "role_title": "Developer",
+            "display_name": "Regular User",
+            "team": "Engineering",
+            "department": "Engineering",
+            "position": "Software Developer",
+            "bio": "Full-stack developer working on core features",
             "is_active": True,
             "is_approved": True,
-            "roles": [roles["user"]],
-            "profile": {
-                "display_name": "Regular User",
-                "team": "Engineering",
-                "position": "Developer",
-            }
+            "roles": [roles["team_member"]],
         },
         {
             "email": "guest@example.com",
@@ -275,15 +318,14 @@ def create_users(db: Session, roles: dict):
             "first_name": "Guest",
             "middle_name": "Test",
             "last_name": "User",
-            "role_title": "Guest User",
+            "display_name": "Guest User",
+            "team": "External",
+            "department": "External",
+            "position": "Guest Observer",
+            "bio": "External guest with read-only access",
             "is_active": True,
             "is_approved": True,
-            "roles": [roles["guest"]],
-            "profile": {
-                "display_name": "Guest User",
-                "team": "External",
-                "position": "Guest",
-            }
+            "roles": [roles["viewer"]],
         },
         {
             "email": "inactive@example.com",
@@ -291,15 +333,14 @@ def create_users(db: Session, roles: dict):
             "first_name": "Inactive",
             "middle_name": "Test",
             "last_name": "User",
-            "role_title": "Inactive Account",
+            "display_name": "Inactive User",
+            "team": "None",
+            "department": "None",
+            "position": "Inactive Account",
+            "bio": "Inactive test account",
             "is_active": False,
             "is_approved": False,
-            "roles": [roles["user"]],
-            "profile": {
-                "display_name": "Inactive User",
-                "team": "None",
-                "position": "Inactive",
-            }
+            "roles": [roles["team_member"]],
         }
     ]
     
@@ -308,34 +349,21 @@ def create_users(db: Session, roles: dict):
         # Extract and store password for printing later
         plain_password = user_data.pop("password")
         
-        # Extract roles and profile
+        # Extract roles
         user_roles = user_data.pop("roles")
-        profile_data = user_data.pop("profile")
         
         # Hash password
         user_data["password"] = hash_password(plain_password)
         
-        # Create user
+        # Create user with all profile fields included
         user = User(**user_data)
         user.roles = user_roles
         
         db.add(user)
-        db.flush()  # Get user.id for profile
-        
-        # Create profile
-        profile = Profile(
-            id=user.id,
-            display_name=profile_data["display_name"],
-            team=profile_data["team"],
-            position=profile_data["position"],
-            email=user.email,
-        )
-        db.add(profile)
-        
         users.append((user, plain_password))
     
     db.commit()
-    print(f"✓ Created {len(users)} users with profiles")
+    print(f"✓ Created {len(users)} users")
     
     # Print credentials
     print("\n📝 User Credentials:")
@@ -343,6 +371,8 @@ def create_users(db: Session, roles: dict):
     for user, password in users:
         print(f"Email: {user.email}")
         print(f"Password: {password}")
+        print(f"Name: {user.full_name}")
+        print(f"Position: {user.position}")
         print(f"Role: {user.roles[0].name if user.roles else 'N/A'}")
         print("-" * 60)
     
@@ -471,12 +501,10 @@ def verify_data(db: Session):
     users_count = db.query(User).count()
     roles_count = db.query(Role).count()
     permissions_count = db.query(Permission).count()
-    profiles_count = db.query(Profile).count()
     
     print(f"  Users: {users_count}")
     print(f"  Roles: {roles_count}")
     print(f"  Permissions: {permissions_count}")
-    print(f"  Profiles: {profiles_count}")
     
     # Check relationships
     admin = db.query(User).filter(User.email == "admin@example.com").first()
@@ -484,11 +512,7 @@ def verify_data(db: Session):
         print(f"  Admin user has {len(admin.roles)} role(s)")
         if admin.roles:
             print(f"  Admin role has {len(admin.roles[0].permissions)} permission(s)")
-        
-        # Check if profile exists
-        profile = db.query(Profile).filter(Profile.id == admin.id).first()
-        if profile:
-            print(f"  Admin profile: {profile.display_name} - {profile.position}")
+        print(f"  Admin: {admin.full_name} ({admin.preferred_name}) - {admin.position} at {admin.department}")
     
     print("✓ Database verification complete")
 

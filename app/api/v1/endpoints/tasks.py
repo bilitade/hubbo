@@ -173,23 +173,26 @@ def list_tasks(
     idea_id: Optional[UUID] = None,
     assigned_to: Optional[UUID] = None,
     search: Optional[str] = None,
+    my_items_only: bool = Query(False, description="Filter to only current user's tasks"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-    _: bool = Depends(require_permission("view_user")),
+    _: bool = Depends(require_permission("tasks:view")),
 ):
     """
     List tasks with filtering and pagination.
+    Users with 'tasks:view' permission can see all tasks unless my_items_only=True.
     """
     query = db.query(Task)
     
-    # Filter by user's tasks or tasks where user is involved
-    query = query.filter(
-        or_(
-            Task.assigned_to == current_user.id,
-            Task.owner_id == current_user.id,
-            Task.accountable_id == current_user.id,
+    # Optionally filter by user's tasks
+    if my_items_only:
+        query = query.filter(
+            or_(
+                Task.assigned_to == current_user.id,
+                Task.owner_id == current_user.id,
+                Task.accountable_id == current_user.id,
+            )
         )
-    )
     
     # Apply filters
     if status:

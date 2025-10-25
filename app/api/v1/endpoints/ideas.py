@@ -65,26 +65,29 @@ def list_ideas(
     is_archived: Optional[bool] = None,
     category: Optional[str] = None,
     search: Optional[str] = None,
+    my_items_only: bool = Query(False, description="Filter to only current user's items"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-    _: bool = Depends(require_permission("view_user")),
+    _: bool = Depends(require_permission("ideas:view")),
 ):
     """
     List ideas with filtering and pagination.
+    Users with 'ideas:view' permission can see all ideas unless my_items_only=True.
     """
     query = db.query(Idea)
     
-    # Filter by user's ideas or ideas where user is involved
-    query = query.filter(
-        or_(
-            Idea.user_id == current_user.id,
-            Idea.owner_id == current_user.id,
-            Idea.responsible_id == current_user.id,
-            Idea.accountable_id == current_user.id,
-            Idea.consulted_ids.any(current_user.id),
-            Idea.informed_ids.any(current_user.id),
+    # Optionally filter by user's ideas
+    if my_items_only:
+        query = query.filter(
+            or_(
+                Idea.user_id == current_user.id,
+                Idea.owner_id == current_user.id,
+                Idea.responsible_id == current_user.id,
+                Idea.accountable_id == current_user.id,
+                Idea.consulted_ids.any(current_user.id),
+                Idea.informed_ids.any(current_user.id),
+            )
         )
-    )
     
     # Apply filters
     if status:

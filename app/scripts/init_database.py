@@ -501,10 +501,10 @@ def main():
     try:
         # Step 1: Drop existing tables (unless skipped)
         if not skip_drop:
-            drop_all_tables()
+         drop_all_tables()
         
         # Step 2: Create all tables
-        create_all_tables()
+         create_all_tables()
         
         # Step 3: Create data in correct order
         db = SessionLocal()

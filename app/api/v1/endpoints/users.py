@@ -1,5 +1,6 @@
 """User management endpoints."""
 from typing import Any, List
+from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.db import get_db
@@ -133,7 +134,7 @@ def update_current_user(
 
 @router.get("/{user_id}", response_model=UserResponse)
 def read_user(
-    user_id: int,
+    user_id: UUID,
     db: Session = Depends(get_db),
     _: bool = Depends(require_permission("view_user"))
 ) -> Any:
@@ -161,7 +162,7 @@ def list_users(
 
 @router.patch("/{user_id}", response_model=UserResponse)
 def update_user(
-    user_id: int,
+    user_id: UUID,
     user_data: UserAdminUpdate,
     db: Session = Depends(get_db),
     _: bool = Depends(require_permission("edit_user"))
@@ -218,7 +219,7 @@ def update_user(
 
 @router.patch("/{user_id}/approve", response_model=UserResponse)
 def approve_user(
-    user_id: int,
+    user_id: UUID,
     db: Session = Depends(get_db),
     _: bool = Depends(require_permission("edit_user"))
 ) -> Any:
@@ -238,7 +239,7 @@ def approve_user(
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(
-    user_id: int,
+    user_id: UUID,
     db: Session = Depends(get_db),
     _: bool = Depends(require_permission("delete_user"))
 ) -> None:

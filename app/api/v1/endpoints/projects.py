@@ -36,9 +36,21 @@ def create_project(
     """
     Create a new project with RACI assignments.
     """
-    # Generate project number
-    project_count = db.query(func.count(Project.id)).scalar()
-    project_number = f"PRJ-{project_count + 1:05d}"
+    # Generate unique project number by finding the max existing number
+    max_project_number = db.query(func.max(Project.project_number)).scalar()
+    
+    if max_project_number:
+        # Extract the number from format PRJ-00001
+        try:
+            last_number = int(max_project_number.split('-')[1])
+            next_number = last_number + 1
+        except (IndexError, ValueError):
+            # Fallback if format is unexpected
+            next_number = db.query(func.count(Project.id)).scalar() + 1
+    else:
+        next_number = 1
+    
+    project_number = f"PRJ-{next_number:05d}"
     
     project = Project(
         title=project_data.title,

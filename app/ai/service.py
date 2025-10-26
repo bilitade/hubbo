@@ -1,6 +1,6 @@
 """Unified AI service - efficient and minimal."""
 from typing import Optional, Dict, Any, List
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage, BaseMessage
 from langchain_core.prompts import PromptTemplate
 from app.ai.llm_factory import LLMFactory
 from app.ai.config import LLMConfig
@@ -39,6 +39,54 @@ class AIService:
             context_str = "\n".join([f"{k}: {v}" for k, v in context.items()])
             messages.append(SystemMessage(content=f"Context:\n{context_str}"))
         
+        messages.append(HumanMessage(content=message))
+        
+        response = await self.llm.ainvoke(messages)
+        return response.content
+    
+    async def chat_with_history(
+        self,
+        message: str,
+        history: List[Dict[str, str]],
+        system_prompt: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None
+    ) -> str:
+        """
+        Chat with AI including conversation history.
+        
+        Args:
+            message: Current user message
+            history: Previous messages [{"role": "user|assistant|system", "content": "..."}]
+            system_prompt: Optional system instructions
+            context: Additional context
+            
+        Returns:
+            AI response
+        """
+        messages: List[BaseMessage] = []
+        
+        # Add system prompt first
+        if system_prompt:
+            messages.append(SystemMessage(content=system_prompt))
+        
+        # Add context
+        if context:
+            context_str = "\n".join([f"{k}: {v}" for k, v in context.items()])
+            messages.append(SystemMessage(content=f"Context:\n{context_str}"))
+        
+        # Add conversation history
+        for msg in history:
+            role = msg.get("role", "user")
+            content = msg.get("content", "")
+            
+            if role == "user":
+                messages.append(HumanMessage(content=content))
+            elif role == "assistant":
+                messages.append(AIMessage(content=content))
+            elif role == "system":
+                messages.append(SystemMessage(content=content))
+        
+        # Add current message
         messages.append(HumanMessage(content=message))
         
         response = await self.llm.ainvoke(messages)

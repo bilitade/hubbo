@@ -13,6 +13,7 @@ from app.models.task import (
     TaskResponsibleUser
 )
 from app.models.experiment import Experiment
+from app.models.chat import Chat, ChatThread, ChatMessage
 
 __all__ = [
     "User",
@@ -28,6 +29,9 @@ __all__ = [
     "TaskActivityLog",
     "TaskResponsibleUser",
     "Experiment",
+    "Chat",
+    "ChatThread",
+    "ChatMessage",
     "user_roles",
     "role_permissions",
 ]

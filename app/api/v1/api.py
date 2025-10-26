@@ -8,6 +8,7 @@ from app.api.v1.endpoints import (
     ai,
     ai_project,
     ai_enhance,
+    chat,
     files,
     password,
     ideas,
@@ -31,9 +32,12 @@ api_router.include_router(projects.router, prefix="/projects", tags=["Projects"]
 api_router.include_router(tasks.router, prefix="/tasks", tags=["Tasks"])
 api_router.include_router(experiments.router, prefix="/experiments", tags=["Experiments"])
 
-# AI & Files
+# AI Services (Modular & Separated)
 api_router.include_router(ai.router, prefix="/ai", tags=["AI Assistant"])
 api_router.include_router(ai_project.router, prefix="/ai/project", tags=["AI Project Generator"])
 api_router.include_router(ai_enhance.router, prefix="/ai/enhance", tags=["AI Enhancers"])
+api_router.include_router(chat.router, prefix="/chat", tags=["AI Chat (Guru)"])
+
+# Files
 api_router.include_router(files.router, prefix="/files", tags=["File Storage"])
 

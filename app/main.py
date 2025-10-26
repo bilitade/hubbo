@@ -17,6 +17,7 @@ from app.db.base import Base, import_models
 from app.db.session import engine
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.middleware.security_headers import SecurityHeadersMiddleware
+from app.middleware.audit_logger import AuditLogMiddleware
 
 # Register all models with SQLAlchemy
 import_models()
@@ -65,6 +66,9 @@ app.add_middleware(
     requests_per_minute=1000,  # Very high limit for development
     requests_per_hour=10000    # Very high limit for development
 )
+
+# Add audit logging to track all user actions
+app.add_middleware(AuditLogMiddleware)
 
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 

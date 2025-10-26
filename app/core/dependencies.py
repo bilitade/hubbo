@@ -1,7 +1,7 @@
 """Common FastAPI dependencies for authentication and database access."""
 from typing import Optional
 import uuid
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from app.db import get_db
@@ -12,6 +12,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
 def get_current_user(
+    request: Request,
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
 ) -> User:
@@ -60,6 +61,9 @@ def get_current_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User account is inactive",
         )
+    
+    # Store user in request state for audit logging middleware
+    request.state.user = user
     
     return user
 

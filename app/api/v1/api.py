@@ -16,6 +16,10 @@ from app.api.v1.endpoints import (
     projects,
     tasks,
     experiments,
+    system_settings,
+    audit_logs,
+    llm_logs,
+    reports,
 )
 from app.api.v1 import knowledge_base
 
@@ -27,6 +31,7 @@ api_router.include_router(password.router, prefix="/password", tags=["Password M
 api_router.include_router(users.router, prefix="/users", tags=["Users"])
 api_router.include_router(roles.router, prefix="/roles", tags=["Roles"])
 api_router.include_router(permissions.router, prefix="/permissions", tags=["Permissions"])
+api_router.include_router(system_settings.router, prefix="/settings", tags=["System Settings"])
 
 # Core Features
 api_router.include_router(ideas.router, prefix="/ideas", tags=["Ideas"])
@@ -46,4 +51,9 @@ api_router.include_router(knowledge_base.router, tags=["Knowledge Base"])
 
 # Files
 api_router.include_router(files.router, prefix="/files", tags=["File Storage"])
+
+# System Management
+api_router.include_router(audit_logs.router, prefix="/audit-logs", tags=["Audit Logs"])
+api_router.include_router(llm_logs.router, prefix="/llm-logs", tags=["LLM Logs"])
+api_router.include_router(reports.router, prefix="/reports", tags=["Reports"])
 

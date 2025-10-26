@@ -15,6 +15,9 @@ from app.models.task import (
 from app.models.experiment import Experiment
 from app.models.chat import Chat, ChatThread, ChatMessage
 from app.models.knowledge_base import KnowledgeBaseDocument, KnowledgeBaseChunk
+from app.models.system_setting import SystemSetting
+from app.models.audit_log import AuditLog
+from app.models.llm_log import LLMLog
 
 __all__ = [
     "User",
@@ -35,6 +38,9 @@ __all__ = [
     "ChatMessage",
     "KnowledgeBaseDocument",
     "KnowledgeBaseChunk",
+    "SystemSetting",
+    "AuditLog",
+    "LLMLog",
     "user_roles",
     "role_permissions",
 ]

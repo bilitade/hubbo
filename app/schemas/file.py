@@ -1,7 +1,8 @@
 """File management schemas."""
-from typing import Optional, List
+from typing import Optional, List, Union
 from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict
+from uuid import UUID
 
 
 class FileUploadResponse(BaseModel):
@@ -11,7 +12,7 @@ class FileUploadResponse(BaseModel):
     filepath: str
     size: int
     category: str
-    user_id: int
+    user_id: Union[int, str, UUID]
     upload_date: str
     indexed: bool = False
     
@@ -37,7 +38,7 @@ class FileInfo(BaseModel):
     filepath: str
     relative_path: str
     size: int
-    user_id: Optional[int] = None
+    user_id: Optional[Union[int, str, UUID]] = None
     category: str = "general"
     modified: str
     

@@ -19,24 +19,29 @@ router = APIRouter()
 async def upload_file(
     file: UploadFile = File(...),
     category: str = Query(default="general", description="File category"),
-    index: bool = Query(default=True, description="Index file for AI search"),
+    index: bool = Query(default=False, description="Index file for AI search (only for .txt and .md)"),
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """
     Upload file to storage.
     
     - Saves to filesystem
-    - Optionally indexes in vector DB for AI search
-    - Supports .txt and .md files
+    - Optionally indexes in vector DB for AI search (only .txt and .md)
+    - Supports all standard document types
     """
-    # Validate file type
-    allowed_types = [".txt", ".md"]
+    # Validate file type - block dangerous file types, allow all standard documents
+    blocked_types = [
+        ".exe", ".bat", ".cmd", ".sh", ".ps1",  # Executables
+        ".dll", ".so", ".dylib",  # Libraries
+        ".app", ".deb", ".rpm",  # Installers
+        ".js", ".vbs", ".jar",  # Potentially dangerous scripts
+    ]
     file_ext = "." + file.filename.split(".")[-1].lower() if "." in file.filename else ""
     
-    if file_ext not in allowed_types:
+    if file_ext in blocked_types:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"File type not supported. Allowed: {', '.join(allowed_types)}"
+            detail=f"File type not allowed for security reasons. Executable and script files are blocked."
         )
     
     # Save file
@@ -53,9 +58,9 @@ async def upload_file(
             detail=str(e)
         )
     
-    # Index if requested
+    # Index if requested (only for text files)
     indexed = False
-    if index:
+    if index and file_ext in [".txt", ".md"]:
         docs = DocumentSearch()
         indexed = docs.index_file(
             filepath=file_metadata["filepath"],

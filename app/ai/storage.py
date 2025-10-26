@@ -61,7 +61,7 @@ class FileStorage:
             "relative_path": str(filepath.relative_to(self.upload_dir)),
             "size": file_stat.st_size,
             "category": category,
-            "user_id": user_id,
+            "user_id": str(user_id),  # Convert to string for consistency
             "upload_date": datetime.now().isoformat(),
             "content_type": file.content_type or "application/octet-stream"
         }
@@ -89,12 +89,20 @@ class FileStorage:
                 rel_path = filepath.relative_to(self.upload_dir)
                 parts = rel_path.parts
                 
+                # Try to parse user_id - handle both UUID and int
+                user_id_str = parts[0] if parts else None
+                try:
+                    # Try as UUID first (string format)
+                    user_id = str(user_id_str) if user_id_str else None
+                except:
+                    user_id = None
+                
                 files.append({
                     "filename": filepath.name,
                     "filepath": str(filepath),
                     "relative_path": str(rel_path),
                     "size": stat.st_size,
-                    "user_id": int(parts[0]) if parts else None,
+                    "user_id": user_id,
                     "category": parts[1] if len(parts) > 1 else "general",
                     "modified": datetime.fromtimestamp(stat.st_mtime).isoformat()
                 })

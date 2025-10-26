@@ -1,0 +1,112 @@
+Test ID,Test Case Name,Test Case Description,Expected Result,Actual Result
+1,General Test,,,
+1.1,Flexibility,"defining and updating rules, fees, commissions, 
+and charges without the need 
+of code changes using the built-in rule engine.",Successful,Successful
+1.2,"Integration with loyality, instant and bulk issuance","Check integration, and if modules work together",Successful,Successful
+1.3,PCI compliance,"PCI compliance rules will be checked such as, PIN hide, PAN number hide and other rules",Successful,Successful
+1.4,Instant issuance flow and rules,"Issuing cards instantly at the branch, kiosk",Successful,Successful
+1.5,Capture customer card request from web services,Internal bank team approve the request,Successful,Successful
+1.7,Risk management and Preferences,,Successful,Successful
+,,,,
+1.2,Wallet Management,,,
+1.2.1,Account creation,Add customer information to the cortex for wallet use to create an account,wallet customer account is successfully created,Successful
+1.2.2,Top up,,,
+1.2.3,Load/unload cash,Add cash to the wallet and decrease the value when customer withdraw the money,Successful,Successful
+,,,,
+1.3,Debit Scope ,,,
+1.3.1,Customer onboarding and Account management;,"Customer information(name, address) will be registered to the cortex.",Customer information will be created on the cortex and account management services will be available for administrator,Successful
+1.3.1.1,Onboarding using cortex GUI,"Customer information(name, address) will be registered to the cortex.",customer onboarded,Successful
+1.3.1.1.1,Onboarding using Webservices/REST API,"Customer information(name, address) will be registered to the cortex.",customer onboarded,Successful
+1.3.1.1.2,Onbording usig KIOSK,"Customer information(name, address) will be registered to the cortex.",customer onboarded,Successful
+1.3.1.1.3,chatbot,"Customer information(name, address) will be registered to the cortex.",customer onboarded,Successful
+1.3.1.1.4,ITM,"Customer information(name, address) will be registered to the cortex.",customer onboarded,Successful
+1.3.1.1.5,Online Banking,"Customer information(name, address) will be registered to the cortex.",customer onboarded,Successful
+1.3.1.1.6,Mobile App,"Customer information(name, address) will be registered to the cortex.",customer onboarded,Successful
+,,,,
+1.3.2,Card creation and Management (Digital/Physical);,"card creation by giving account/customer information and generating cvv, cvv, expiry date, and etc",card information will be created on cortex and card management services will be available for administrator,Successful
+1.3.2.1,Local card creation,different product card creation for issuing,local card information created with different existing bank productst,Successful
+1.3.2.2,Virtual card creation,,virtual card information will be created,Successful
+1.3.2.2.1,Virtual card request(through API),,request will made to the cortex,Successful
+1.3.2.2.2,"Virtual card detail view(PAN, Expire date, CVV)",,card detail will be displayed,Successful
+1.3.2.2.3,Enable/disable the card,a card can be enabled/disabled,card disabled,Successful
+1.3.2.2.4,PIN change/reset,automatic end of the day PIN reset and manual PIN reset,PIN changed/PIN wrong will be reseted,Successful
+1.3.2.2.5,Request a physical card,card request,Successful,Successful
+1.3.2.3,International card creation,International card creation for issuing,,
+,,,,
+1.3.3,Wallet creation and Management;,management of  (Digital Card),,
+1.3.4,Fees and Commission management;,changing fees and commissions for different products in different time periods.,,
+1.3.5,"Transaction authorization, EMV and tokenization;",,,
+1.3.6, Multi-currency and Forex support;,Not applicable,multicurrency for withdrawing in Ethiopian birr is supported,
+1.3.7,Reconciliation and integration;,,cortex is integrated with reconciliation,
+1.3.8,Schemes Integration and Support;,,,
+1.3.9,Limit Management;,,,
+1.3.9.1,card limit management,card limit set and checked if the limit working,card limit set,
+1.3.9.2,account limit management,account limit set and checked if the limit working,account limit set,
+1.3.10,"Risk Management (MCC, Country restriction);",,,
+1.3.11,Balance Management;,balance management does credit and debit transactions and holds latest balance for overall ,,
+1.3.12,Markup Management;,,,
+1.3.13,Risk Preference ,"Risk preference rules can be set by different choices like (Customer selection for types of transactions, MCCs, Countries...);",,
+1.3.14,Corporate Structure ,"Corporate structures can be created like branch, head office((multi-level with cost centers);",CBO structure is added to the cortex successfuly,
+1.3.15,Notification Management ,"Notification will be sent for different actions to different stakeholders like((transactions, card management actions, SMS and email support);",Notification sent,
+1.3.16,VISA CUP Ethioswitch connectivity,network connectivity can be checked.,Connection made,
+,,,,
+,,,,
+1,Card Management Functionalities,,,
+1.1,From Branches,,,
+1.1.1,Card details inquiry,view card details,Successful,Successful
+1.1.2,Card transactions inquiry,Card transaction details are displayed for at least 12 months. (the duration can be changed) ,Successful,Successful
+1.1.3,Card status update (activate/hot list),"card status like activated, cancelled, and etc can be updated",Successful,Successful
+1.1.4,Card account relationship update (link/unlink accounts),"A card can be linked to an account(one or more), can be unlinked",Successful,Successful
+1.1.5,Replace and re-issue card,"Card replacement and issuance process can be approved, created",Successful,
+1.1.6,Supplementary card creation,,supplementary card created,Successful
+1.1.7,View and update velocity limits,"view previous daily, monthly, and yearly limits(withdrawal..)",view velocity and update velocity,Successful
+1.1.9,Check card history,card history information like date creation will be displayed,card history displayed,Successful
+1.1.10,"Update cardholder details (address, mobile …)","card holder's previous details are displayed and can be updated/edited to new information(address, mobile ...)",card holder details displayed,Successful
+1.1.11,Setting the transaction types allowed for supplementary cards ,"(i.e., disable cash withdrawal, e-commerce…)",,
+1.1.12,Rest pin tries (Auto reset PIN tries will be enabled),Pin error counter reset to zero(auto pin try can be set by the day or more),PIN counter resetted,
+,,,,
+1.2,Head Office,,,
+1.2.1,Card details inquiry,view card details,card details inquiry displayed ,Successful
+1.2.2,Card transactions inquiry (for at least 12 months,Card transaction details are displayed for at least 12 months. (the duration can be changed) ,card transaction inquiry displayed ,Successful
+1.2.3,Card status update (activate/hot list),"card status like activated, cancelled, and etc can be updated",card status updated,Successful
+1.2.4,Card account relationship update (link/unlink accounts),"A card can be linked to an account(one or more), can be unlinked",card account details linked or unlinked,Successful
+1.2.5,Replace and re-issue card,"Card replacement and issuance process can be approved, created",card replacement and reissuance is successful,Successful
+1.2.6,Supplementary card creation,,supplementary card created,Successful
+1.2.7,View and update velocity limits,"view previous daily, monthly, and yearly limits(withdrawal..)",view velocity and update velocity,Successful
+1.2.9,Check card history,card history information like date creation will be displayed,card history displayed,
+1.2.10,"Update cardholder details (address, mobile …)","card holder's previous details are displayed and can be updated/edited to new information(address, mobile ...)",card holder details displayed,Successful
+1.2.11,Setting the transaction types allowed for supplementary cards,"(i.e., disable cash withdrawal, e-commerce…)",transaction type allowed set successfully,Successful
+1.2.12,Rest pin tries (Auto reset PIN tries will be enabled),Pin error counter reset to zero(auto pin try can be set by the day or more),PIN counter resetted,Successful
+1.2.13,card issuance with bulk issuance,,Card issuance in bulk is done,Successful
+1.2.14,delivery method options with bulk issuance,,delivery option is set for bulk issuance,Successful
+,,,,
+,,,,
+2,Channels,,,
+2.1,Pin Management,,,
+2.1.1,For all newly created cards:,- Normal customers select their pin using the PIN pad in the branch or the online services to assign the pin through channels,PIN assigned,Successful
+,,"- For VIP and selected customers, PIN mailer is being generated. This can be disabled if needed. Any pin assignment done after the pin mailer generation will have the new pin used/override the previously generated PIN.",,Successful
+,,- Cortex will also support assigning the PIN on first ATM usage of the card.,,Successful
+,,,,
+,Authorization process,1. IST/Switch route the debit card authorization requests to CORTEX,Transaction successfully authorized,Successful
+,,"2. CORTEX does the security data validation for the transaction (CVV, PIN, ARQC…)",,
+,,"3. CORTEX will do the card checks which include card status, expiry, and limits/velocity by card and account, rejection rules (restricted MCCs, countries…)",,
+,,"4. If the request was approved by CORTEX, it forwards the request to the core banking for account status and balance check and actually debit the account.",,
+,,"5. Once the response is received, by CORTEX, the message is sent to IST before returning the response to the calling network/system.",,
+,,,,
+2.3,Velocity Limits,,,
+2.3.1,Daily Cash Withdrawal: maximum X ETB,daily cash withdrawal limit,limit successfully set,
+2.3.2,Daily Purchase Limit: maximum X ETB,daily purchase limit,daily purchase limit successfully set,
+2.3.3,Ecommerce limit – customer can set it (enable/disable e-commerce).,,eCommerce limit successfully set,
+,,,,
+2.4,BASE2 support,,,
+2.4.1,BASEII will be received to CORTEX,,Base II received,
+2.4.2,CORTEX will load the file and generate a standard file format to be sent to core banking,,cortex loaded file and generated ,
+2.4.3,Core banking will load file,,core banking loaded file successfully,
+2.4.3.1,Match with authorization request,,authorization amount matched,
+2.4.3.2,Unblock the amount,,,
+2.4.3.3,Post the new amount.,,new amount posted,
+,,,,
+2.5,other Functionalities,,,
+2.5.1,Segment changes,Change in CBS by segment updates the cortex info,segment changes updated,Successful
+2.5.4,Markup(optional issuer fee calculation,fee calculation of transaction made as acquiring is calculated,issues fee calculation report is generated,Successful

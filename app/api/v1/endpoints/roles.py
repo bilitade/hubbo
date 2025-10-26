@@ -96,9 +96,6 @@ def update_role(
             )
         role.name = role_data.name
     
-    if role_data.description is not None:
-        role.description = role_data.description
-    
     if role_data.permission_names is not None:
         permissions = db.query(Permission).filter(
             Permission.name.in_(role_data.permission_names)

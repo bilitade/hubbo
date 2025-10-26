@@ -315,3 +315,4 @@ You are the brain of Hubbo. Be intelligent, helpful, and accurate!
             yield f"\n\nI encountered an error: {str(e)}"
 
 
+

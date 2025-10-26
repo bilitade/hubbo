@@ -660,13 +660,32 @@ def delete_task_comment(
 
 # ============= TASK ATTACHMENTS =============
 
+@router.get("/attachments/all", response_model=List[TaskAttachmentResponse])
+def list_all_attachments(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    _: bool = Depends(require_permission("view_user")),
+):
+    """
+    List all task attachments across all tasks.
+    Useful for document management page.
+    """
+    attachments = db.query(TaskAttachment).order_by(
+        TaskAttachment.created_at.desc()
+    ).offset(skip).limit(limit).all()
+    
+    return attachments
+
+
 @router.post("/{task_id}/attachments", response_model=TaskAttachmentResponse, status_code=status.HTTP_201_CREATED)
 async def upload_task_attachment(
     task_id: UUID,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-    _: bool = Depends(require_permission("user:write")),
+    _: bool = Depends(require_permission("edit_user")),
 ):
     """
     Upload an attachment to a task.
@@ -742,6 +761,43 @@ def list_task_attachments(
     ).all()
     
     return attachments
+
+
+@router.get("/{task_id}/attachments/{attachment_id}/download")
+async def download_task_attachment(
+    task_id: UUID,
+    attachment_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    _: bool = Depends(require_permission("view_user")),
+):
+    """
+    Download a task attachment.
+    """
+    from fastapi.responses import FileResponse
+    
+    attachment = db.query(TaskAttachment).filter(
+        TaskAttachment.id == attachment_id,
+        TaskAttachment.task_id == task_id
+    ).first()
+    
+    if not attachment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Attachment not found"
+        )
+    
+    if not os.path.exists(attachment.file_path):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="File not found on server"
+        )
+    
+    return FileResponse(
+        path=attachment.file_path,
+        filename=attachment.file_name,
+        media_type=attachment.mime_type
+    )
 
 
 @router.delete("/{task_id}/attachments/{attachment_id}", status_code=status.HTTP_204_NO_CONTENT)

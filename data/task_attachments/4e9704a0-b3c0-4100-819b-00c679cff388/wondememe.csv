@@ -1,0 +1,15 @@
+Test ID,Test Case Name,Test Case Description,Expected Result,Actual Result
+1,General Test,,,
+1.1,Flexibility,"defining and updating rules, fees, commissions, 
+and charges without the need 
+of code changes using the built-in rule engine.",Successful,Successful
+1.2,"Integration with loyality, instant and bulk issuance","Check integration, and if modules work together",Successful,Successful
+1.3,PCI compliance,"PCI compliance rules will be checked such as, PIN hide, PAN number hide and other rules",Successful,Successful
+1.4,Instant issuance flow and rules,"Issuing cards instantly at the branch, kiosk",Successful,Successful
+1.5,Capture customer card request from web services,Internal bank team approve the request,Successful,Successful
+1.7,Risk management and Preferences,,Successful,Successful
+,,,,
+1.2,Wallet Management,,,
+1.2.1,Account creation,Add customer information to the cortex for wallet use to create an account,wallet customer account is successfully created,Successful
+1.2.2,Top up,,,
+1.2.3,Load/unload cash,Add cash to the wallet and decrease the value when customer withdraw the money,Successful,Successful

@@ -109,12 +109,20 @@ echo ""
 # Step 3: Database Setup
 if [ "$SKIP_DB" = false ]; then
     echo "🗄️  Database setup..."
-    read -p "Initialize database with sample data? (y/n) " -n 1 -r
+    read -p "Initialize database? (y/n) " -n 1 -r
     echo ""
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        print_info "Initializing database..."
-        python3 -m app.scripts.init_database
-        print_success "Database initialized with sample data"
+        print_info "Running database migration..."
+        python3 migrate.py
+        print_success "Database initialized"
+        
+        read -p "Add sample data? (y/n) " -n 1 -r
+        echo ""
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            print_info "Seeding sample data..."
+            python3 seed.py
+            print_success "Sample data added"
+        fi
     fi
     echo ""
 fi

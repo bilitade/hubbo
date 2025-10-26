@@ -63,8 +63,8 @@ async def stream_chat(
     if not chat:
         raise HTTPException(status_code=404, detail="Thread not found")
     
-    # Create streaming service
-    chat_service = AsyncStreamingChatService()
+    # Create streaming service (automatic logging via callbacks)
+    chat_service = AsyncStreamingChatService(user_id=current_user.id)
     
     async def generate_stream() -> AsyncIterator[str]:
         """Generate SSE stream."""
@@ -131,8 +131,8 @@ async def quick_stream_chat(
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
     
-    # Create or get quick thread
-    chat_service = AsyncStreamingChatService()
+    # Create or get quick thread (automatic logging via callbacks)
+    chat_service = AsyncStreamingChatService(user_id=current_user.id)
     thread = chat_service.create_thread(
         db=db,
         chat_id=chat_id,

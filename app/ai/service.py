@@ -1,5 +1,6 @@
 """Unified AI service - efficient and minimal."""
 from typing import Optional, Dict, Any, List
+import uuid
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage, BaseMessage
 from langchain_core.prompts import PromptTemplate
 from app.ai.llm_factory import LLMFactory
@@ -9,9 +10,13 @@ from app.ai.config import LLMConfig
 class AIService:
     """Single efficient service for all AI operations."""
     
-    def __init__(self, llm_config: Optional[LLMConfig] = None):
-        """Initialize with LLM."""
-        self.llm = LLMFactory.create_llm(llm_config)
+    def __init__(self, llm_config: Optional[LLMConfig] = None, user_id: Optional[uuid.UUID] = None):
+        """Initialize with LLM and automatic logging via callbacks."""
+        self.llm = LLMFactory.create_llm(
+            config=llm_config,
+            user_id=user_id,
+            feature="ai_service"
+        )
     
     async def chat(
         self,
@@ -41,6 +46,7 @@ class AIService:
         
         messages.append(HumanMessage(content=message))
         
+        # ✨ LLM automatically logged via callback!
         response = await self.llm.ainvoke(messages)
         return response.content
     
@@ -89,6 +95,7 @@ class AIService:
         # Add current message
         messages.append(HumanMessage(content=message))
         
+        # ✨ LLM automatically logged via callback!
         response = await self.llm.ainvoke(messages)
         return response.content
     

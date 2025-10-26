@@ -17,10 +17,14 @@ from app.models.user import User
 class AsyncStreamingChatService:
     """Async chat service with streaming support for real-time responses."""
     
-    def __init__(self, llm_config: Optional[LLMConfig] = None):
-        """Initialize chat service."""
-        self.llm = LLMFactory.create_llm(llm_config)
-        self.agent = IntelligentAgent(llm_config)
+    def __init__(self, llm_config: Optional[LLMConfig] = None, user_id: Optional[uuid.UUID] = None):
+        """Initialize chat service with automatic logging."""
+        self.llm = LLMFactory.create_llm(
+            config=llm_config,
+            user_id=user_id,
+            feature="streaming_chat"
+        )
+        self.agent = IntelligentAgent(llm_config, user_id=user_id)
     
     def create_chat(
         self,
@@ -142,7 +146,7 @@ class AsyncStreamingChatService:
         chunk_count = 0
         
         try:
-            # Get agent response (streaming)
+            # Get agent response (streaming) - automatically logged via callback!
             async for chunk in self._stream_agent_with_tools(
                 db=db,
                 user_message=user_message,

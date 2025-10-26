@@ -35,9 +35,13 @@ class IntelligentAgent:
     - Multi-user support with isolation
     """
     
-    def __init__(self, llm_config: Optional[LLMConfig] = None):
-        """Initialize intelligent agent."""
-        self.llm = LLMFactory.create_llm(llm_config)
+    def __init__(self, llm_config: Optional[LLMConfig] = None, user_id: Optional[UUID] = None):
+        """Initialize intelligent agent with automatic logging."""
+        self.llm = LLMFactory.create_llm(
+            config=llm_config,
+            user_id=user_id,
+            feature="intelligent_agent"
+        )
     
     def _create_system_prompt(self) -> str:
         """Create comprehensive system prompt."""

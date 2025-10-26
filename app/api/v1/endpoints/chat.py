@@ -58,7 +58,7 @@ def create_chat(
     if request.description:
         description = InputSanitizer.sanitize_text(request.description, max_length=1000, field_name="description")
     
-    chat_service = ChatService()
+    chat_service = ChatService(user_id=current_user.id)
     chat = chat_service.create_chat(
         db=db,
         user_id=current_user.id,
@@ -82,7 +82,7 @@ def list_chats(
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """Get all chats for current user."""
-    chat_service = ChatService()
+    chat_service = ChatService(user_id=current_user.id)
     chats = chat_service.get_user_chats(
         db=db,
         user_id=current_user.id,
@@ -201,7 +201,7 @@ def create_thread(
     if request.context:
         context = InputSanitizer.sanitize_dict(request.context)
     
-    chat_service = ChatService()
+    chat_service = ChatService(user_id=current_user.id)
     thread = chat_service.create_thread(
         db=db,
         chat_id=request.chat_id,
@@ -226,7 +226,7 @@ def list_threads(
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
     
-    chat_service = ChatService()
+    chat_service = ChatService(user_id=current_user.id)
     threads = chat_service.get_chat_threads(
         db=db,
         chat_id=chat_id,
@@ -311,7 +311,7 @@ def list_messages(
     if not chat:
         raise HTTPException(status_code=404, detail="Thread not found")
     
-    chat_service = ChatService()
+    chat_service = ChatService(user_id=current_user.id)
     messages = chat_service.get_thread_messages(db=db, thread_id=thread_id, limit=limit)
     
     message_responses = [ChatMessageResponse.model_validate(m) for m in messages]
@@ -342,8 +342,8 @@ def assistant_chat(
     # Sanitize message
     message = InputSanitizer.sanitize_ai_prompt(request.message, "message")
     
-    # Chat with assistant
-    chat_service = ChatService()
+    # Chat with assistant (automatic logging via callbacks)
+    chat_service = ChatService(user_id=current_user.id)
     user_msg, assistant_msg = chat_service.chat_completion(
         db=db,
         thread_id=request.thread_id,
@@ -384,8 +384,8 @@ def quick_chat(
     if request.system_prompt:
         system_prompt = InputSanitizer.sanitize_ai_prompt(request.system_prompt, "system_prompt")
     
-    # Create thread
-    chat_service = ChatService()
+    # Create thread (automatic logging via callbacks)
+    chat_service = ChatService(user_id=current_user.id)
     thread = chat_service.create_thread(
         db=db,
         chat_id=request.chat_id,

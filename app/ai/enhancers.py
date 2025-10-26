@@ -1,5 +1,6 @@
 """AI enhancers for Ideas, Projects, and Tasks using LangChain."""
 from typing import Optional, Dict, Any, List
+import uuid
 from langchain_core.messages import HumanMessage, SystemMessage
 from app.ai.llm_factory import LLMFactory
 from app.ai.config import LLMConfig
@@ -10,9 +11,13 @@ import json
 class IdeaEnhancer:
     """Enhance ideas with AI-generated improvements."""
     
-    def __init__(self, llm_config: Optional[LLMConfig] = None):
-        """Initialize with LLM."""
-        self.llm = LLMFactory.create_llm(llm_config)
+    def __init__(self, llm_config: Optional[LLMConfig] = None, user_id: Optional[uuid.UUID] = None):
+        """Initialize with LLM and automatic logging."""
+        self.llm = LLMFactory.create_llm(
+            config=llm_config,
+            user_id=user_id,
+            feature="idea_enhancer"
+        )
     
     async def enhance_idea(
         self,
@@ -95,9 +100,13 @@ OUTCOME: [improved possible outcome]"""
 class ProjectEnhancer:
     """Enhance projects with AI-generated details."""
     
-    def __init__(self, llm_config: Optional[LLMConfig] = None):
-        """Initialize with LLM."""
-        self.llm = LLMFactory.create_llm(llm_config)
+    def __init__(self, llm_config: Optional[LLMConfig] = None, user_id: Optional[uuid.UUID] = None):
+        """Initialize with LLM and automatic logging."""
+        self.llm = LLMFactory.create_llm(
+            config=llm_config,
+            user_id=user_id,
+            feature="project_enhancer"
+        )
     
     async def enhance_project(
         self,
@@ -221,9 +230,13 @@ OUTCOMES:
 class TaskGenerator:
     """Generate tasks and subtasks for projects using AI."""
     
-    def __init__(self, llm_config: Optional[LLMConfig] = None):
-        """Initialize with LLM."""
-        self.llm = LLMFactory.create_llm(llm_config)
+    def __init__(self, llm_config: Optional[LLMConfig] = None, user_id: Optional[uuid.UUID] = None):
+        """Initialize with LLM and automatic logging."""
+        self.llm = LLMFactory.create_llm(
+            config=llm_config,
+            user_id=user_id,
+            feature="task_generator"
+        )
     
     async def generate_tasks(
         self,

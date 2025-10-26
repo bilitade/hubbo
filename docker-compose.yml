@@ -1,33 +1,75 @@
 version: '3.8'
 
 services:
-  app:
-    build: .
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/hubbo
-      - UPLOAD_DIR=/app/data/uploads
-      - VECTOR_STORE_PATH=/app/data/vectorstore
-    volumes:
-      - ./data/uploads:/app/data/uploads
-      - ./data/vectorstore:/app/data/vectorstore
-    depends_on:
-      - db
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
-
+  # PostgreSQL with pgvector extension
   db:
     image: ankane/pgvector:latest
+    container_name: hubbo-db
     environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=hubbo
+      POSTGRES_USER: ${DB_USER:-hubbo_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-hubbo_pass}
+      POSTGRES_DB: ${DB_NAME:-hubbo}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
-    command: postgres -c shared_preload_libraries=vector
+      - "${DB_PORT:-5432}:5432"
+    restart: unless-stopped
+    command: postgres -c shared_preload_libraries=vector -c max_connections=200
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-hubbo_user} -d ${DB_NAME:-hubbo}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hubbo-network
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hubbo-backend
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-hubbo_user}:${DB_PASSWORD:-hubbo_pass}@db:5432/${DB_NAME:-hubbo}
+      UPLOAD_DIR: /app/data/uploads
+      VECTOR_STORE_PATH: /app/data/vectorstore
+    volumes:
+      - upload_data:/app/data/uploads
+      - vector_data:/app/data/vectorstore
+      - ./logs:/app/logs
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    command: >
+      sh -c "
+      echo 'Waiting for database...' &&
+      sleep 5 &&
+      python migrate.py --no-drop &&
+      uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - hubbo-network
 
 volumes:
   postgres_data:
+    driver: local
+  upload_data:
+    driver: local
+  vector_data:
+    driver: local
+
+networks:
+  hubbo-network:
+    driver: bridge
 

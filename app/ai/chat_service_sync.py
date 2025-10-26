@@ -88,9 +88,13 @@ class ChatContextBuilder:
 class ChatService:
     """Service for managing AI chat conversations - synchronous version."""
     
-    def __init__(self, llm_config: Optional[LLMConfig] = None):
-        """Initialize chat service."""
-        self.llm = LLMFactory.create_llm(llm_config)
+    def __init__(self, llm_config: Optional[LLMConfig] = None, user_id: Optional[uuid.UUID] = None):
+        """Initialize chat service with automatic logging."""
+        self.llm = LLMFactory.create_llm(
+            config=llm_config,
+            user_id=user_id,
+            feature="chat_service"
+        )
     
     def create_chat(
         self,
@@ -276,6 +280,7 @@ Use these tools to provide accurate answers. Always format responses with markdo
                 elif msg["role"] == "assistant":
                     history_msgs.append(AIMessage(content=msg["content"]))
             
+            # ✨ Agent automatically logged via callback!
             result = agent_executor.invoke({
                 "input": user_message,
                 "chat_history": history_msgs,
@@ -283,6 +288,7 @@ Use these tools to provide accurate answers. Always format responses with markdo
             
             assistant_response = result.get("output", "I apologize, I couldn't process that.")
             print(f"✅ Agent response: {len(assistant_response)} chars")
+            
         except Exception as e:
             print(f"Agent failed, falling back to simple chat: {e}")
             # Fallback to simple LLM if agent fails
@@ -302,6 +308,7 @@ Use these tools to provide accurate answers. Always format responses with markdo
             
             messages.append(HumanMessage(content=user_message))
             
+            # ✨ Fallback LLM automatically logged via callback!
             import asyncio
             response = asyncio.run(self.llm.ainvoke(messages))
             assistant_response = response.content

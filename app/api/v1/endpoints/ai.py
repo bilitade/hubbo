@@ -45,7 +45,8 @@ async def chat(
     if request.system_prompt:
         system_prompt = InputSanitizer.sanitize_ai_prompt(request.system_prompt, "system_prompt")
     
-    ai = AIService()
+    # Initialize AI service with user_id for logging
+    ai = AIService(user_id=current_user.id)
     
     user_context = {
         "user": f"{current_user.first_name} {current_user.last_name}",
@@ -77,7 +78,7 @@ async def generate_idea(
     if request.context:
         context = InputSanitizer.sanitize_ai_prompt(request.context, "context")
     
-    ai = AIService()
+    ai = AIService(user_id=current_user.id)
     result = await ai.generate_ideas(
         topic=topic,
         context=context
@@ -97,7 +98,7 @@ async def enhance_content(
     # Sanitize inputs
     content = InputSanitizer.sanitize_ai_prompt(request.content, "content")
     
-    ai = AIService()
+    ai = AIService(user_id=current_user.id)
     result = await ai.enhance_content(
         content=content,
         instruction=request.enhancement_type
@@ -118,7 +119,7 @@ async def auto_fill(
     field_name = InputSanitizer.sanitize_field_name(request.field_name)
     existing_data = InputSanitizer.sanitize_dict(request.existing_data)
     
-    ai = AIService()
+    ai = AIService(user_id=current_user.id)
     result = await ai.auto_fill(
         field_name=field_name,
         existing_data=existing_data

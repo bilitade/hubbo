@@ -17,9 +17,15 @@ OperationType = Literal[
 class ProjectInfoGenerator:
     """Generate comprehensive project information using AI."""
     
-    def __init__(self, llm_config: Optional[LLMConfig] = None):
-        """Initialize with LLM."""
-        self.llm = LLMFactory.create_llm(llm_config)
+    def __init__(self, llm_config: Optional[LLMConfig] = None, user_id: Optional[str] = None):
+        """Initialize with LLM and automatic logging."""
+        from uuid import UUID
+        user_uuid = UUID(user_id) if user_id and isinstance(user_id, str) else user_id
+        self.llm = LLMFactory.create_llm(
+            config=llm_config,
+            user_id=user_uuid,
+            feature="project_generator"
+        )
     
     async def generate_project_info(
         self,

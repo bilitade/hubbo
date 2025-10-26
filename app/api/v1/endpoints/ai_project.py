@@ -82,7 +82,7 @@ async def generate_project_info(
     ```
     """
     try:
-        generator = ProjectInfoGenerator()
+        generator = ProjectInfoGenerator(user_id=str(current_user.id))
         
         result = await generator.generate_project_info(
             message=request.message,
@@ -130,7 +130,7 @@ async def generate_title_description(
     ```
     """
     try:
-        generator = ProjectInfoGenerator()
+        generator = ProjectInfoGenerator(user_id=str(current_user.id))
         
         result = await generator.generate_title_description(
             idea_or_concept=request.idea_or_concept,
@@ -188,7 +188,7 @@ async def generate_project_details(
     ```
     """
     try:
-        generator = ProjectInfoGenerator()
+        generator = ProjectInfoGenerator(user_id=str(current_user.id))
         
         result = await generator.generate_project_details(
             project_title=request.project_title,
@@ -250,7 +250,7 @@ async def generate_full_project(
     ```
     """
     try:
-        generator = ProjectInfoGenerator()
+        generator = ProjectInfoGenerator(user_id=str(current_user.id))
         
         result = await generator.generate_full_project(
             idea_or_concept=request.idea_or_concept,

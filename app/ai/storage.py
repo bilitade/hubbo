@@ -18,7 +18,7 @@ class FileStorage:
     async def save_file(
         self,
         file: UploadFile,
-        user_id: int,
+        user_id,
         category: str = "general"
     ) -> Dict[str, Any]:
         """

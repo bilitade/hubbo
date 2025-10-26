@@ -5,10 +5,13 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select, desc
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage, BaseMessage
 import uuid
+import asyncio
 
 from app.ai.llm_factory import LLMFactory
 from app.ai.config import LLMConfig
-from app.ai.agent_service import AgentService
+from app.ai.tools import create_tools
+from langchain.agents import AgentExecutor, create_openai_tools_agent
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from app.models.chat import Chat, ChatThread, ChatMessage
 from app.models.user import User
 
@@ -88,7 +91,6 @@ class ChatService:
     def __init__(self, llm_config: Optional[LLMConfig] = None):
         """Initialize chat service."""
         self.llm = LLMFactory.create_llm(llm_config)
-        self.agent_service = AgentService(llm_config)
     
     def create_chat(
         self,
@@ -229,14 +231,58 @@ class ChatService:
             for msg in history_messages
         ]
         
-        # Use agent service to get response with tools
+        # Use agent with tools
         try:
-            assistant_response = self.agent_service.chat_with_agent(
-                db=db,
-                user_message=user_message,
-                user=user,
-                chat_history=history
+            print(f"🤖 Using agent with tools for: {user_message[:50]}...")
+            
+            # Create agent executor
+            tools = create_tools(db)
+            
+            system_prompt = """You are Hubbo AI, an intelligent assistant for the Hubbo project management system.
+
+You have access to tools that can:
+- Search documents in Knowledge Base (search_knowledge_base)
+- Search for specific projects (search_project)
+- List all projects (get_projects)
+- List tasks (get_tasks)
+- Get project statistics (get_project_stats)
+- Analyze team workload (get_user_workload)
+- List ideas (get_ideas)
+- Find overdue projects (get_overdue_projects)
+
+Use these tools to provide accurate answers. Always format responses with markdown."""
+
+            prompt = ChatPromptTemplate.from_messages([
+                ("system", system_prompt),
+                MessagesPlaceholder(variable_name="chat_history", optional=True),
+                ("human", "{input}"),
+                MessagesPlaceholder(variable_name="agent_scratchpad"),
+            ])
+            
+            agent = create_openai_tools_agent(self.llm, tools, prompt)
+            agent_executor = AgentExecutor(
+                agent=agent,
+                tools=tools,
+                verbose=True,
+                max_iterations=10,
+                handle_parsing_errors=True,
             )
+            
+            # Convert history to messages
+            history_msgs = []
+            for msg in history:
+                if msg["role"] == "user":
+                    history_msgs.append(HumanMessage(content=msg["content"]))
+                elif msg["role"] == "assistant":
+                    history_msgs.append(AIMessage(content=msg["content"]))
+            
+            result = agent_executor.invoke({
+                "input": user_message,
+                "chat_history": history_msgs,
+            })
+            
+            assistant_response = result.get("output", "I apologize, I couldn't process that.")
+            print(f"✅ Agent response: {len(assistant_response)} chars")
         except Exception as e:
             print(f"Agent failed, falling back to simple chat: {e}")
             # Fallback to simple LLM if agent fails

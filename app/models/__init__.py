@@ -14,6 +14,7 @@ from app.models.task import (
 )
 from app.models.experiment import Experiment
 from app.models.chat import Chat, ChatThread, ChatMessage
+from app.models.knowledge_base import KnowledgeBaseDocument, KnowledgeBaseChunk
 
 __all__ = [
     "User",
@@ -32,6 +33,8 @@ __all__ = [
     "Chat",
     "ChatThread",
     "ChatMessage",
+    "KnowledgeBaseDocument",
+    "KnowledgeBaseChunk",
     "user_roles",
     "role_permissions",
 ]

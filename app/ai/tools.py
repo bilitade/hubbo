@@ -6,12 +6,14 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, desc, and_
 from datetime import datetime
 import json
+import asyncio
 
 from app.models.project import Project
 from app.models.task import Task
 from app.models.idea import Idea
 from app.models.user import User
 from app.models.experiment import Experiment
+from app.ai.kb_service import KBService
 
 
 class GetProjectsInput(BaseModel):
@@ -394,6 +396,155 @@ class GetUserWorkloadTool(BaseTool):
         return json.dumps(result, indent=2)
 
 
+class SearchProjectInput(BaseModel):
+    """Input for search_project tool."""
+    query: str = Field(..., description="Search query (project name/title)")
+
+
+class SearchProjectTool(BaseTool):
+    """Tool to search for a specific project by name."""
+    name: str = "search_project"
+    description: str = """Search for a project by name or title. Use this when user asks about a specific project by name.
+    Examples: 'Lumo MVP', 'Website Redesign', 'Mobile App'"""
+    args_schema: type[BaseModel] = SearchProjectInput
+    db: Session = None
+    
+    def _run(self, query: str) -> str:
+        """Execute the tool."""
+        # Search by title (case-insensitive)
+        projects = self.db.query(Project).filter(
+            and_(
+                Project.title.ilike(f"%{query}%"),
+                Project.is_archived == False
+            )
+        ).all()
+        
+        if not projects:
+            return json.dumps({
+                "status": "not_found",
+                "message": f"No project found matching '{query}'",
+                "suggestion": "Try using get_projects to see all available projects"
+            })
+        
+        result = {
+            "status": "found",
+            "search_query": query,
+            "matches": len(projects),
+            "projects": []
+        }
+        
+        for p in projects:
+            # Get task statistics
+            total_tasks = self.db.query(func.count(Task.id)).filter(Task.project_id == p.id).scalar() or 0
+            done_tasks = self.db.query(func.count(Task.id)).filter(
+                Task.project_id == p.id, Task.status == 'done'
+            ).scalar() or 0
+            in_progress_tasks = self.db.query(func.count(Task.id)).filter(
+                Task.project_id == p.id, Task.status == 'in_progress'
+            ).scalar() or 0
+            
+            completion = round((done_tasks / total_tasks * 100) if total_tasks > 0 else 0, 1)
+            
+            # Get team members
+            owner_name = f"{p.owner.first_name} {p.owner.last_name}" if p.owner else "Unassigned"
+            responsible_name = f"{p.responsible.first_name} {p.responsible.last_name}" if p.responsible else "Not assigned"
+            accountable_name = f"{p.accountable.first_name} {p.accountable.last_name}" if p.accountable else "Not assigned"
+            
+            project_data = {
+                "title": p.title,
+                "description": p.description or "No description",
+                "project_brief": p.project_brief or "No brief",
+                "desired_outcomes": p.desired_outcomes or "Not specified",
+                "status": p.status,
+                "workflow_step": p.workflow_step,
+                "owner": owner_name,
+                "responsible": responsible_name,
+                "accountable": accountable_name,
+                "progress": {
+                    "total_tasks": total_tasks,
+                    "completed_tasks": done_tasks,
+                    "in_progress_tasks": in_progress_tasks,
+                    "completion_percentage": completion
+                },
+                "timeline": {
+                    "start_date": str(p.start_date.date()) if p.start_date else "Not set",
+                    "due_date": str(p.due_date.date()) if p.due_date else "Not set",
+                    "created_at": str(p.created_at.date()),
+                    "last_activity": str(p.last_activity_date.date()) if p.last_activity_date else "N/A"
+                },
+                "metrics": {
+                    "primary_metric": float(p.primary_metric) if p.primary_metric else None,
+                    "secondary_metrics": p.secondary_metrics or {}
+                },
+                "latest_update": p.latest_update or "No updates"
+            }
+            
+            result["projects"].append(project_data)
+        
+        return json.dumps(result, indent=2)
+
+
+class SearchKnowledgeBaseInput(BaseModel):
+    """Input for search_knowledge_base tool."""
+    query: str = Field(..., description="Search query to find relevant information in documents")
+    k: int = Field(3, description="Number of relevant chunks to return (1-10)")
+
+
+class SearchKnowledgeBaseTool(BaseTool):
+    """Tool to search the knowledge base documents."""
+    name: str = "search_knowledge_base"
+    description: str = """Search uploaded documents in the knowledge base for relevant information.
+    Use this when user asks about documents, company policies, procedures, or any information that might be in uploaded files.
+    Examples: 'Lumo MVP', 'company policy', 'project requirements', 'technical specs'"""
+    args_schema: type[BaseModel] = SearchKnowledgeBaseInput
+    db: Session = None
+    
+    def _run(self, query: str, k: int = 3) -> str:
+        """Execute the tool."""
+        try:
+            # Create KB service
+            kb_service = KBService(self.db)
+            
+            # Run async search synchronously
+            search_result = asyncio.run(
+                kb_service.search(query=query, k=k)
+            )
+            
+            if not search_result.results:
+                return json.dumps({
+                    "status": "not_found",
+                    "message": f"No relevant documents found for '{query}'",
+                    "suggestion": "Try rephrasing your query or check if documents are uploaded to the Knowledge Base"
+                })
+            
+            result = {
+                "status": "found",
+                "query": query,
+                "total_results": len(search_result.results),
+                "processing_time_ms": search_result.processing_time_ms,
+                "documents": []
+            }
+            
+            for idx, chunk in enumerate(search_result.results, 1):
+                result["documents"].append({
+                    "rank": idx,
+                    "filename": chunk.filename,
+                    "category": chunk.category,
+                    "similarity_score": round(chunk.similarity_score * 100, 1),
+                    "content": chunk.content,
+                    "chunk_index": chunk.chunk_index,
+                })
+            
+            return json.dumps(result, indent=2)
+            
+        except Exception as e:
+            return json.dumps({
+                "status": "error",
+                "message": f"Error searching knowledge base: {str(e)}",
+                "suggestion": "The knowledge base might not be configured properly"
+            })
+
+
 class GetIdeasInput(BaseModel):
     """Input for get_ideas tool."""
     limit: int = Field(10, description="Maximum number of ideas to return")
@@ -431,6 +582,8 @@ class GetIdeasTool(BaseTool):
 def create_tools(db: Session) -> List[BaseTool]:
     """Create all tools with database session."""
     return [
+        SearchKnowledgeBaseTool(db=db),  # First - for document queries
+        SearchProjectTool(db=db),  # Second - for specific project queries
         GetProjectsTool(db=db),
         GetTasksTool(db=db),
         GetOverdueProjectsTool(db=db),

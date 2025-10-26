@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from app.models.token import RefreshToken
     from app.models.password_reset import PasswordResetToken
     from app.models.idea import Idea
+    from app.models.knowledge_base import KnowledgeBaseDocument
 
 
 user_roles = Table(
@@ -80,6 +81,11 @@ class User(Base):
     ideas: Mapped[list["Idea"]] = relationship(
         "Idea",
         foreign_keys="Idea.user_id",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+    kb_documents: Mapped[list["KnowledgeBaseDocument"]] = relationship(
+        "KnowledgeBaseDocument",
         back_populates="user",
         cascade="all, delete-orphan"
     )

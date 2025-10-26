@@ -9,6 +9,7 @@ from app.api.v1.endpoints import (
     ai_project,
     ai_enhance,
     chat,
+    chat_stream,
     files,
     password,
     ideas,
@@ -16,6 +17,7 @@ from app.api.v1.endpoints import (
     tasks,
     experiments,
 )
+from app.api.v1 import knowledge_base
 
 api_router = APIRouter()
 
@@ -37,6 +39,10 @@ api_router.include_router(ai.router, prefix="/ai", tags=["AI Assistant"])
 api_router.include_router(ai_project.router, prefix="/ai/project", tags=["AI Project Generator"])
 api_router.include_router(ai_enhance.router, prefix="/ai/enhance", tags=["AI Enhancers"])
 api_router.include_router(chat.router, prefix="/chat", tags=["AI Chat (Guru)"])
+api_router.include_router(chat_stream.router, prefix="/chat", tags=["AI Chat Streaming"])
+
+# Knowledge Base & RAG
+api_router.include_router(knowledge_base.router, tags=["Knowledge Base"])
 
 # Files
 api_router.include_router(files.router, prefix="/files", tags=["File Storage"])

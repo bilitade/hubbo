@@ -22,4 +22,8 @@ def import_models() -> None:
         TaskResponsibleUser,
     )
     from app.models.experiment import Experiment  # noqa: F401
+    from app.models.knowledge_base import (  # noqa: F401
+        KnowledgeBaseDocument,
+        KnowledgeBaseChunk,
+    )
 

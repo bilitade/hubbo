@@ -59,3 +59,4 @@ class AuditLog(Base):
     def __repr__(self) -> str:
         return f"<AuditLog(id={self.id}, action='{self.action}', user={self.user_email})>"
 
+

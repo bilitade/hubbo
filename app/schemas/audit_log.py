@@ -44,3 +44,4 @@ class AuditLogStatsResponse(BaseModel):
     actions_by_type: dict[str, int]
     recent_activity: int  # Last 24 hours
 
+

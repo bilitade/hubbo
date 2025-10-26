@@ -75,3 +75,4 @@ class SystemSetting(Base):
     def __repr__(self) -> str:
         return f"<SystemSetting(id={self.id}, ai_provider='{self.ai_provider}')>"
 
+

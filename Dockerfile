@@ -1,46 +1,35 @@
-FROM python:3.11-slim
+# syntax=docker/dockerfile:1
+FROM python:3.11-slim AS runtime
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    curl \
-    postgresql-client \
+    libpq-dev \
+    libmagic1 \
+    poppler-utils \
+    tesseract-ocr \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first (for better caching)
-COPY requirements.txt .
+RUN adduser --disabled-password --gecos "" appuser
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt ./
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY . .
+COPY app ./app
+COPY migrate.py seed.py ./
+COPY data ./data
 
-# Create necessary directories
-RUN mkdir -p /app/data/uploads /app/data/vectorstore /app/logs && \
-    chmod +x /app/migrate.py /app/seed.py
+RUN mkdir -p data/uploads data/vectorstore logs && \
+    chown -R appuser:appuser /app
 
-# Create non-root user for security
-RUN useradd -m -u 1000 hubbo && \
-    chown -R hubbo:hubbo /app
+USER appuser
 
-USER hubbo
-
-# Expose port
 EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
-
-# Run application with Uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
-
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

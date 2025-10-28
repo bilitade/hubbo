@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     API_V1_PREFIX: str = "/api/v1"
     
     SECRET_KEY: str = Field(
-        default="your-secret-key-change-in-production",
+        default="QX7B7T_nHy0BUJJLjk8KOUfqujh44J0y-amcrJq758c",
         description="JWT signing key - must be changed in production",
         min_length=32
     )

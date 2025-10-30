@@ -21,6 +21,11 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 from app.db.session import SessionLocal
+from app.db.base import import_models
+
+# Ensure all declarative models are registered before importing specific models
+import_models()
+
 from app.models.user import User
 from app.models.role import Role
 from app.models.idea import Idea
@@ -197,107 +202,125 @@ def create_sample_projects(db, users):
         print("  ⚠️  Admin user not found, skipping projects")
         return []
     
+    created_projects = []
+
+    def get_or_create_task(project, title, **task_kwargs):
+        task = db.query(Task).filter(
+            Task.project_id == project.id,
+            Task.title == title
+        ).first()
+        if task:
+            print(f"  ⚠️  Task '{title}' already exists, skipping")
+            return task
+        task = Task(project_id=project.id, title=title, **task_kwargs)
+        db.add(task)
+        db.flush()
+        return task
+
+    def ensure_activity(task, title, completed):
+        existing = db.query(TaskActivity).filter(
+            TaskActivity.task_id == task.id,
+            TaskActivity.title == title
+        ).first()
+        if existing:
+            return
+        db.add(TaskActivity(task_id=task.id, title=title, completed=completed))
+
     # Project 1: Q1 Platform Upgrade
-    project1 = Project(
-        title="Q1 2024 Platform Upgrade",
-        description="Major platform upgrade focusing on performance and new features",
-        project_brief="Upgrade platform infrastructure for better performance and scalability",
-        desired_outcomes="50% performance improvement, 10x scalability, 5 new features",
-        project_number="PRJ-00001",
-        status="in_progress",
-        backlog="business_innovation",
-        workflow_step=2,
-        owner_id=admin.id,
-        responsible_id=admin.id,
-        accountable_id=admin.id,
-        departments=["Engineering", "Product"],
-    )
-    db.add(project1)
-    db.flush()
+    project1 = db.query(Project).filter(Project.project_number == "PRJ-00001").first()
+    if project1:
+        print("  ⚠️  Project 'PRJ-00001' already exists, skipping creation")
+    else:
+        project1 = Project(
+            title="Q1 2024 Platform Upgrade",
+            description="Major platform upgrade focusing on performance and new features",
+            project_brief="Upgrade platform infrastructure for better performance and scalability",
+            desired_outcomes="50% performance improvement, 10x scalability, 5 new features",
+            project_number="PRJ-00001",
+            status="in_progress",
+            backlog="business_innovation",
+            workflow_step=2,
+            owner_id=admin.id,
+            responsible_id=admin.id,
+            accountable_id=admin.id,
+            departments=["Engineering", "Product"],
+        )
+        db.add(project1)
+        db.flush()
+        created_projects.append(project1)
     
-    # Tasks for Project 1
-    task1_1 = Task(
-        project_id=project1.id,
-        title="Setup CI/CD Pipeline",
-        description="Configure automated testing and deployment pipeline",
-        status="done",
-        owner_id=admin.id,
-        assigned_to=admin.id,
-    )
-    db.add(task1_1)
-    db.flush()
+    if project1:
+        task1_1 = get_or_create_task(
+            project1,
+            "Setup CI/CD Pipeline",
+            description="Configure automated testing and deployment pipeline",
+            status="done",
+            owner_id=admin.id,
+            assigned_to=admin.id,
+        )
+        ensure_activity(task1_1, "Configure GitHub Actions", True)
+        ensure_activity(task1_1, "Setup Docker builds", True)
+        ensure_activity(task1_1, "Deploy to staging", True)
+        
+        task1_2 = get_or_create_task(
+            project1,
+            "Optimize Database Queries",
+            description="Improve database performance with query optimization and indexing",
+            status="in_progress",
+            owner_id=admin.id,
+            assigned_to=admin.id,
+        )
+        ensure_activity(task1_2, "Analyze slow queries", True)
+        ensure_activity(task1_2, "Add database indexes", False)
+        ensure_activity(task1_2, "Optimize ORM queries", False)
+        
+        task1_3 = get_or_create_task(
+            project1,
+            "Implement Real-time Notifications",
+            description="Add WebSocket support for real-time updates",
+            status="unassigned",
+            owner_id=admin.id,
+        )
+
+    project2 = db.query(Project).filter(Project.project_number == "PRJ-00002").first()
+    if project2:
+        print("  ⚠️  Project 'PRJ-00002' already exists, skipping creation")
+    else:
+        project2 = Project(
+            title="Marketing Website Redesign",
+            description="Complete redesign of marketing website with modern UI",
+            project_brief="Modernize marketing website to improve conversion and brand image",
+            desired_outcomes="25% increase in conversion rate, improved brand perception",
+            project_number="PRJ-00002",
+            status="planning",
+            backlog="core_business",
+            workflow_step=1,
+            owner_id=admin.id,
+            responsible_id=admin.id,
+            accountable_id=admin.id,
+            departments=["Marketing", "Design"],
+        )
+        db.add(project2)
+        db.flush()
+        created_projects.append(project2)
     
-    db.add_all([
-        TaskActivity(task_id=task1_1.id, title="Configure GitHub Actions", completed=True),
-        TaskActivity(task_id=task1_1.id, title="Setup Docker builds", completed=True),
-        TaskActivity(task_id=task1_1.id, title="Deploy to staging", completed=True),
-    ])
-    
-    task1_2 = Task(
-        project_id=project1.id,
-        title="Optimize Database Queries",
-        description="Improve database performance with query optimization and indexing",
-        status="in_progress",
-        owner_id=admin.id,
-        assigned_to=admin.id,
-    )
-    db.add(task1_2)
-    db.flush()
-    
-    db.add_all([
-        TaskActivity(task_id=task1_2.id, title="Analyze slow queries", completed=True),
-        TaskActivity(task_id=task1_2.id, title="Add database indexes", completed=False),
-        TaskActivity(task_id=task1_2.id, title="Optimize ORM queries", completed=False),
-    ])
-    
-    task1_3 = Task(
-        project_id=project1.id,
-        title="Implement Real-time Notifications",
-        description="Add WebSocket support for real-time updates",
-        status="unassigned",
-        owner_id=admin.id,
-    )
-    db.add(task1_3)
-    
-    # Project 2: Marketing Website Redesign
-    project2 = Project(
-        title="Marketing Website Redesign",
-        description="Complete redesign of marketing website with modern UI",
-        project_brief="Modernize marketing website to improve conversion and brand image",
-        desired_outcomes="25% increase in conversion rate, improved brand perception",
-        project_number="PRJ-00002",
-        status="planning",
-        backlog="core_business",
-        workflow_step=1,
-        owner_id=admin.id,
-        responsible_id=admin.id,
-        accountable_id=admin.id,
-        departments=["Marketing", "Design"],
-    )
-    db.add(project2)
-    db.flush()
-    
-    # Tasks for Project 2
-    task2_1 = Task(
-        project_id=project2.id,
-        title="Create Design Mockups",
-        description="Design new homepage and key landing pages",
-        status="in_progress",
-        owner_id=admin.id,
-        assigned_to=admin.id,
-    )
-    db.add(task2_1)
-    db.flush()
-    
-    db.add_all([
-        TaskActivity(task_id=task2_1.id, title="Research competitor websites", completed=True),
-        TaskActivity(task_id=task2_1.id, title="Create wireframes", completed=True),
-        TaskActivity(task_id=task2_1.id, title="Design high-fidelity mockups", completed=False),
-    ])
-    
+    if project2:
+        task2_1 = get_or_create_task(
+            project2,
+            "Create Design Mockups",
+            description="Design new homepage and key landing pages",
+            status="in_progress",
+            owner_id=admin.id,
+            assigned_to=admin.id,
+        )
+        ensure_activity(task2_1, "Research competitor websites", True)
+        ensure_activity(task2_1, "Create wireframes", True)
+        ensure_activity(task2_1, "Design high-fidelity mockups", False)
+
     db.commit()
-    print(f"✓ Created 2 projects with 4 tasks and activities")
-    return [project1, project2]
+    total_created = len(created_projects)
+    print(f"✓ Projects processed (new: {total_created})")
+    return created_projects or [p for p in [project1, project2] if p]
 
 
 def create_sample_experiments(db, users):
@@ -309,30 +332,43 @@ def create_sample_experiments(db, users):
         print("  ⚠️  Admin user not found, skipping experiments")
         return []
     
+    project = db.query(Project).first()
+    if not project:
+        print("  ⚠️  No project found, skipping experiments")
+        return []
+    
     sample_experiments = [
         {
             "title": "A/B Test: New CTA Button Design",
-            "description": "Test new call-to-action button design to improve click-through rate",
-            "hypothesis": "Larger, more prominent CTA will increase conversions by 20%",
-            "status": "in_progress",
+            "hypothesis": "A more prominent CTA button will increase conversions by 20%",
+            "method": "Split traffic between control and new CTA design, measuring click-through rates",
+            "success_criteria": "New CTA design achieves at least 15% higher CTR compared to control",
+            "progress_updates": [
+                "Kickoff meeting held with design and marketing",
+                "CTA variants implemented behind feature flag"
+            ],
+            "project_id": project.id,
         },
         {
             "title": "Performance Test: Database Pooling",
-            "description": "Test impact of connection pooling on database performance",
-            "hypothesis": "Connection pooling will reduce query latency by 30%",
-            "status": "completed",
+            "hypothesis": "Connection pooling will reduce average query latency by 30%",
+            "method": "Benchmark API endpoints before and after enabling pooling under load",
+            "success_criteria": "Observed latency reduction of at least 20% without error increase",
+            "progress_updates": [
+                "Baseline performance metrics collected",
+                "Connection pool configuration deployed to staging",
+                "Preliminary load tests indicate 18% latency reduction"
+            ],
+            "project_id": project.id,
         },
     ]
     
     created_experiments = []
     for exp_data in sample_experiments:
-        experiment = Experiment(
-            owner_id=admin.id,
-            **exp_data
-        )
+        experiment = Experiment(**exp_data)
         db.add(experiment)
         created_experiments.append(experiment)
-    
+
     db.commit()
     print(f"✓ Created {len(created_experiments)} sample experiments")
     return created_experiments

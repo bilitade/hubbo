@@ -2,7 +2,7 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, exists
 from uuid import UUID
 from datetime import datetime
 import os
@@ -202,7 +202,14 @@ def list_tasks(
     if idea_id:
         query = query.filter(Task.idea_id == idea_id)
     if assigned_to:
-        query = query.filter(Task.assigned_to == assigned_to)
+        query = query.filter(
+            or_(
+                Task.assigned_to == assigned_to,
+                exists()
+                .where(TaskResponsibleUser.task_id == Task.id)
+                .where(TaskResponsibleUser.user_id == assigned_to)
+            )
+        )
     if search:
         query = query.filter(
             or_(
